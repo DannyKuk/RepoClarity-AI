@@ -2,6 +2,7 @@ from app.repo.scanner import scan_repository
 from app.rag.chunker import chunk_file
 from app.rag.embedder import embed_texts, embedding_dimension
 from app.rag.vector_store import VectorStore
+from app.rag.query_engine import answer_question
 
 
 repo_path = "../"
@@ -24,12 +25,19 @@ vector_store.add(embeddings, chunks)
 print("Files:", len(files))
 print("Chunks:", len(chunks))
 
-query = "scan repository files"
 
-query_embedding = embed_texts([query])[0]
+while True:
 
-results = vector_store.search(query_embedding, k=5)
+    question = input("\nAsk a question (or 'exit'): ")
 
-print("\nSearch results:")
-for r in results:
-    print(r["path"])
+    if question == "exit":
+        break
+
+    answer, sources = answer_question(question, vector_store)
+
+    print("\nAnswer:\n")
+    print(answer)
+
+    print("\nSources:")
+    for s in sources:
+        print("-", s)
