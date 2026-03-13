@@ -1,0 +1,25 @@
+[project]
+name = "repomind"
+version = "0.1.0"
+description = "Chat with any code repository locally using Ollama and FAISS"
+authors = [{ name = "Danny Kukic" }]
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "faiss-cpu",
+    "sentence-transformers",
+    "ollama",
+    "typer",
+    "rich",
+    "requests",
+    "numpy"
+]
+
+[project.scripts]
+repomind = "app.cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["index*"]
