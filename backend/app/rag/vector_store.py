@@ -1,20 +1,16 @@
 import faiss
 import numpy as np
+import pickle
+from pathlib import Path
 
 
 class VectorStore:
 
     def __init__(self, dimension: int):
-        """
-        Initialize FAISS index.
-        """
         self.index = faiss.IndexFlatL2(dimension)
         self.documents = []
 
     def add(self, embeddings, docs):
-        """
-        Add embeddings + metadata.
-        """
 
         embeddings = np.array(embeddings).astype("float32")
 
@@ -22,9 +18,6 @@ class VectorStore:
         self.documents.extend(docs)
 
     def search(self, query_embedding, k=5):
-        """
-        Search most similar chunks.
-        """
 
         query_embedding = np.array([query_embedding]).astype("float32")
 
@@ -33,6 +26,26 @@ class VectorStore:
         results = []
 
         for idx in indices[0]:
-            results.append(self.documents[idx])
+            if idx < len(self.documents):
+                results.append(self.documents[idx])
 
         return results
+
+    def save(self, path):
+
+        path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        faiss.write_index(self.index, str(path / "index.faiss"))
+
+        with open(path / "documents.pkl", "wb") as f:
+            pickle.dump(self.documents, f)
+
+    def load(self, path):
+
+        path = Path(path)
+
+        self.index = faiss.read_index(str(path / "index.faiss"))
+
+        with open(path / "documents.pkl", "rb") as f:
+            self.documents = pickle.load(f)

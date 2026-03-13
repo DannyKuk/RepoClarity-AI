@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from app.repo.scanner import scan_repository
 from app.rag.chunker import chunk_file
 from app.rag.embedder import embed_texts, embedding_dimension
@@ -6,25 +8,36 @@ from app.rag.query_engine import answer_question
 
 
 repo_path = "../"
-
-files = scan_repository(repo_path)
-
-chunks = []
-
-for file in files:
-    chunks.extend(chunk_file(file))
-
-texts = [c["content"] for c in chunks]
-
-embeddings = embed_texts(texts)
+index_path = "./index"
 
 vector_store = VectorStore(embedding_dimension())
 
-vector_store.add(embeddings, chunks)
+# If index exists → load it
+if Path(index_path).exists():
 
-print("Files:", len(files))
-print("Chunks:", len(chunks))
+    print("Loading existing index...")
+    vector_store.load(index_path)
 
+else:
+
+    print("Building index...")
+
+    files = scan_repository(repo_path)
+
+    chunks = []
+
+    for file in files:
+        chunks.extend(chunk_file(file))
+
+    texts = [c["content"] for c in chunks]
+
+    embeddings = embed_texts(texts)
+
+    vector_store.add(embeddings, chunks)
+
+    vector_store.save(index_path)
+
+    print("Index saved.")
 
 while True:
 
