@@ -16,7 +16,6 @@ def ensure_directories():
 
 
 def load_registry():
-
     ensure_directories()
 
     with open(REGISTRY_FILE) as f:
@@ -24,13 +23,11 @@ def load_registry():
 
 
 def save_registry(registry):
-
     with open(REGISTRY_FILE, "w") as f:
         json.dump(registry, f, indent=2)
 
 
 def register_repo(name, path):
-
     registry = load_registry()
 
     registry[name] = path
@@ -39,12 +36,22 @@ def register_repo(name, path):
 
 
 def get_repo(name):
-
     registry = load_registry()
 
     return registry.get(name)
 
 
 def list_repos():
-
     return load_registry()
+
+
+def remove_repo(name: str):
+    registry = load_registry()
+
+    if name not in registry:
+        return False
+    del registry[name]
+
+    save_registry(registry)
+
+    return True

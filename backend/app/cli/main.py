@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import typer
@@ -8,7 +9,7 @@ from app.rag.indexing_service import build_index
 from app.rag.embedder import embedding_dimension
 from app.rag.vector_store import VectorStore
 from app.rag.query_engine import answer_question
-from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos, get_repo
+from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos, get_repo, remove_repo
 
 app = typer.Typer(help="RepoMind CLI - chat with a codebase locally")
 
@@ -128,6 +129,28 @@ def reindex(repo: str):
     vector_store.save(repo_index_dir)
 
     print("[bold green]Index updated.[/bold green]")
+
+@app.command()
+def remove(repo: str):
+    """
+    Remove an indexed repository.
+    """
+
+    index_dir = INDEX_DIR / repo
+
+    if not index_dir.exists():
+        print(f"[bold red]Repo '{repo}' not found.[/bold red]")
+        raise typer.Exit(code=1)
+
+    print(f"[bold yellow]Removing repository:[/bold yellow] {repo}")
+
+    # remove FAISS index directory
+    shutil.rmtree(index_dir)
+
+    # remove registry entry
+    remove_repo(repo)
+
+    print("[bold green]Repository removed.[/bold green]")
 
 if __name__ == "__main__":
     app()
