@@ -7,7 +7,7 @@ from app.rag.indexing_service import build_index
 from app.rag.embedder import embedding_dimension
 from app.rag.vector_store import VectorStore
 from app.rag.query_engine import answer_question
-from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos
+from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos, get_repo
 
 app = typer.Typer(help="RepoMind CLI - chat with a codebase locally")
 
@@ -34,7 +34,7 @@ def index(repo_path: str, name: str):
 
 
 @app.command()
-def ask(question: str, repo: str):
+def ask(repo: str, question: str):
     """
     Ask a question about a specific indexed repo.
     """
@@ -77,6 +77,27 @@ def repos():
     for name, path in repos_list.items():
         print(f"- {name}: {path}")
 
+@app.command()
+def reindex(repo: str):
+    """
+    Rebuild the index for an already registered repository.
+    """
+
+    repo_path = get_repo(repo)
+
+    if not repo_path:
+        print(f"[bold red]Repository '{repo}' not registered.[/bold red]")
+        raise typer.Exit(code=1)
+
+    print(f"[bold blue]Reindexing repository:[/bold blue] {repo}")
+
+    vector_store = build_index(repo_path)
+
+    repo_index_dir = INDEX_DIR / repo
+
+    vector_store.save(repo_index_dir)
+
+    print("[bold green]Index updated.[/bold green]")
 
 if __name__ == "__main__":
     app()
