@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+import subprocess
 from rich import print
 from rich.prompt import Prompt
 
@@ -158,6 +159,34 @@ def remove(repo: str):
     remove_repo(repo)
 
     print("[bold green]Repository removed.[/bold green]")
+
+@app.command()
+def models():
+    """
+    List available Ollama models.
+    """
+
+    try:
+        result = subprocess.run(
+            ["ollama", "list"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
+        lines = result.stdout.splitlines()
+
+        print("[bold blue]Available Ollama models:[/bold blue]\n")
+
+        for line in lines[1:]:
+            print(line)
+
+    except FileNotFoundError:
+        print("[bold red]Ollama is not installed or not in PATH.[/bold red]")
+
+    except subprocess.CalledProcessError as e:
+        print("[bold red]Failed to list models.[/bold red]")
+        print(e)
 
 if __name__ == "__main__":
     app()
