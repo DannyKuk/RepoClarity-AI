@@ -2,6 +2,7 @@ from pathlib import Path
 
 import typer
 from rich import print
+from rich.prompt import Prompt
 
 from app.rag.indexing_service import build_index
 from app.rag.embedder import embedding_dimension
@@ -34,9 +35,11 @@ def index(repo_path: str, name: str):
 
 
 @app.command()
-def ask(repo: str, question: str):
+def ask(repo: str, question: str | None = None):
     """
-    Ask a question about a specific indexed repo.
+    Ask a question about an indexed repository.
+
+    If no question is provided, start interactive chat mode.
     """
 
     index_dir = INDEX_DIR / repo
@@ -48,17 +51,44 @@ def ask(repo: str, question: str):
     vector_store = VectorStore(embedding_dimension())
     vector_store.load(index_dir)
 
-    answer, sources = answer_question(question, vector_store)
+    if question is not None:
+        answer, sources = answer_question(question, vector_store)
 
-    print("\n[bold cyan]Question:[/bold cyan]")
-    print(question)
+        print("\n[bold cyan]Question:[/bold cyan]")
+        print(question)
 
-    print("\n[bold green]Answer:[/bold green]")
-    print(answer)
+        print("\n[bold green]Answer:[/bold green]")
+        print(answer)
 
-    print("\n[bold magenta]Sources:[/bold magenta]")
-    for s in sources:
-        print(f"- {s}")
+        print("\n[bold magenta]Sources:[/bold magenta]")
+        for source in sources:
+            print(f"- {source}")
+
+        return
+
+    print(f"[bold blue]RepoMind chat[/bold blue] ([bold]{repo}[/bold])")
+    print("Type 'exit' to quit.\n")
+
+    while True:
+        user_input = Prompt.ask("[bold cyan]You[/bold cyan]").strip()
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in {"exit", "quit", "q"}:
+            print("Bye.")
+            break
+
+        answer, sources = answer_question(user_input, vector_store)
+
+        print("\n[bold green]RepoMind:[/bold green]")
+        print(answer)
+
+        print("\n[bold magenta]Sources:[/bold magenta]")
+        for source in sources:
+            print(f"- {source}")
+
+        print()
 
 @app.command()
 def repos():
