@@ -7,6 +7,7 @@ from app.rag.indexing_service import build_index
 from app.rag.embedder import embedding_dimension
 from app.rag.vector_store import VectorStore
 from app.rag.query_engine import answer_question
+from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos
 
 app = typer.Typer(help="RepoMind CLI - chat with a codebase locally")
 
@@ -14,27 +15,34 @@ DEFAULT_INDEX_DIR = Path("./index")
 
 
 @app.command()
-def index(repo_path: str, index_dir: str = str(DEFAULT_INDEX_DIR)):
+def index(repo_path: str, name: str):
     """
-    Scan a repository, build embeddings, and persist the index.
+    Index a repository and register it.
     """
+
     print(f"[bold blue]Indexing repository:[/bold blue] {repo_path}")
 
     vector_store = build_index(repo_path)
-    vector_store.save(index_dir)
 
-    print(f"[bold green]Index saved to:[/bold green] {index_dir}")
+    repo_index_dir = INDEX_DIR / name
+
+    vector_store.save(repo_index_dir)
+
+    register_repo(name, repo_path)
+
+    print(f"[bold green]Repository indexed as:[/bold green] {name}")
 
 
 @app.command()
-def ask(question: str, index_dir: str = str(DEFAULT_INDEX_DIR)):
+def ask(question: str, repo: str):
     """
-    Ask a question against an existing persisted index.
+    Ask a question about a specific indexed repo.
     """
-    index_path = Path(index_dir)
 
-    if not index_path.exists():
-        print("[bold red]No index found.[/bold red] Run `repomind index <repo_path>` first.")
+    index_dir = INDEX_DIR / repo
+
+    if not index_dir.exists():
+        print(f"[bold red]Repo '{repo}' not indexed.[/bold red]")
         raise typer.Exit(code=1)
 
     vector_store = VectorStore(embedding_dimension())
@@ -49,8 +57,25 @@ def ask(question: str, index_dir: str = str(DEFAULT_INDEX_DIR)):
     print(answer)
 
     print("\n[bold magenta]Sources:[/bold magenta]")
-    for source in sources:
-        print(f"- {source}")
+    for s in sources:
+        print(f"- {s}")
+
+@app.command()
+def repos():
+    """
+    List all indexed repositories.
+    """
+
+    repos_list = list_repos()
+
+    if not repos_list:
+        print("[bold red]No repositories indexed.[/bold red]")
+        return
+
+    print("[bold blue]Indexed repositories:[/bold blue]")
+
+    for name, path in repos_list.items():
+        print(f"- {name}: {path}")
 
 
 if __name__ == "__main__":
