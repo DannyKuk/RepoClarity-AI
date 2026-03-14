@@ -5,6 +5,8 @@ from app.llm.ollama_client import ask_ollama
 def answer_question(question, vector_store, model=None):
     chunks = retrieve(question, vector_store, k=20)
 
+    summary = vector_store.summary or ""
+
     context = "\n\n".join(
         f"File: {chunk['path']}\n{chunk['content']}"
         for chunk in chunks
@@ -22,6 +24,9 @@ def answer_question(question, vector_store, model=None):
         - project structure
     
         Ignore dependency lists unless relevant.
+        
+        Repository summary:
+        {summary}
     
         Context:
         {context}
