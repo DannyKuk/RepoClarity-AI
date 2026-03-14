@@ -40,6 +40,7 @@ def index(repo_path: str, name: str):
 def ask(
     repo: str = typer.Argument(..., help="Repository name"),
     question: Optional[str] = typer.Argument(None, help="Question to ask. If omitted, interactive chat mode starts.",),
+    model: str = typer.Option(None, "--model", "-m", help="LLM model to use"),
 ):
     """
     Ask a question about an indexed repository.
@@ -47,6 +48,7 @@ def ask(
     If no question is provided, start interactive chat mode.
     """
 
+    model_name = model or "default"
     index_dir = INDEX_DIR / repo
 
     if not index_dir.exists():
@@ -57,12 +59,12 @@ def ask(
     vector_store.load(index_dir)
 
     if question is not None:
-        answer, sources = answer_question(question, vector_store)
+        answer, sources = answer_question(question, vector_store, model=model)
 
         print("\n[bold cyan]Question:[/bold cyan]")
         print(question)
 
-        print("\n[bold green]Answer:[/bold green]")
+        print(f"\n[bold green]Answer[/bold green] [dim]({model_name})[/dim]:")
         print(answer)
 
         print("\n[bold magenta]Sources:[/bold magenta]")
@@ -72,6 +74,7 @@ def ask(
         return
 
     print(f"[bold blue]RepoMind chat[/bold blue] ([bold]{repo}[/bold])")
+    print(f"[bold blue]Model:[/bold blue] {model_name}")
     print("Type 'exit' to quit.\n")
 
     while True:
@@ -84,9 +87,9 @@ def ask(
             print("Bye.")
             break
 
-        answer, sources = answer_question(user_input, vector_store)
+        answer, sources = answer_question(user_input, vector_store, model=model)
 
-        print("\n[bold green]RepoMind:[/bold green]")
+        print(f"\n[bold green]RepoMind[/bold green] [dim]({model_name})[/dim]:")
         print(answer)
 
         print("\n[bold magenta]Sources:[/bold magenta]")

@@ -2,7 +2,7 @@ from app.rag.retriever import retrieve
 from app.llm.ollama_client import ask_ollama
 
 
-def answer_question(question, vector_store):
+def answer_question(question, vector_store, model=None):
     chunks = retrieve(question, vector_store, k=20)
 
     context = "\n\n".join(
@@ -32,7 +32,7 @@ def answer_question(question, vector_store):
         Answer clearly.
         """
 
-    answer = ask_ollama(prompt)
+    answer = ask_ollama(prompt, model=model)
     sources = list({chunk["path"] for chunk in chunks})
 
     return answer, sources
