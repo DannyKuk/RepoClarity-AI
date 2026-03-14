@@ -3,7 +3,7 @@ from app.llm.ollama_client import ask_ollama
 
 
 def answer_question(question, vector_store):
-    chunks = retrieve(question, vector_store, k=5)
+    chunks = retrieve(question, vector_store, k=20)
 
     context = "\n\n".join(
         f"File: {chunk['path']}\n{chunk['content']}"
@@ -11,18 +11,25 @@ def answer_question(question, vector_store):
     )
 
     prompt = f"""
-        You are an expert software engineer analyzing a codebase.
-        
+        You are analyzing a software repository.
+    
         Use the provided context to answer the question.
-        Only use the provided context. If the answer is unclear, say so.
-        
+    
+        If the question asks about the *purpose of the project*, prefer:
+    
+        - README files
+        - configuration files
+        - project structure
+    
+        Ignore dependency lists unless relevant.
+    
         Context:
         {context}
-        
+    
         Question:
         {question}
-        
-        Answer clearly and reference file names if possible.
+    
+        Answer clearly.
         """
 
     answer = ask_ollama(prompt)

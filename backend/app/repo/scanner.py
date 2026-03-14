@@ -5,7 +5,6 @@ SUPPORTED_EXTENSIONS = {
     ".js",
     ".ts",
     ".vue",
-    ".json",
     ".md",
     ".yaml",
     ".yml",
@@ -19,13 +18,32 @@ IGNORED_DIRS = {
     "dist",
     "build",
     "__pycache__",
-    ".venv"
+    ".venv",
+    ".nuxt",
+    ".output",
+    ".next",
+    ".cache"
+}
+
+IGNORED_FILES = {
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml"
 }
 
 
 def should_ignore(path: Path) -> bool:
-    """Check if path contains ignored directories."""
-    return any(part in IGNORED_DIRS for part in path.parts)
+    """Check if path should be ignored."""
+
+    # ignore directories like node_modules, dist, etc.
+    if any(part in IGNORED_DIRS for part in path.parts):
+        return True
+
+    # ignore specific files
+    if path.name in IGNORED_FILES:
+        return True
+
+    return False
 
 
 def scan_repository(repo_path: str):

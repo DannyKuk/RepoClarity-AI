@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich import print
@@ -36,7 +37,10 @@ def index(repo_path: str, name: str):
 
 
 @app.command()
-def ask(repo: str, question: str | None = None):
+def ask(
+    repo: str = typer.Argument(..., help="Repository name"),
+    question: Optional[str] = typer.Argument(None, help="Question to ask. If omitted, interactive chat mode starts.",),
+):
     """
     Ask a question about an indexed repository.
 

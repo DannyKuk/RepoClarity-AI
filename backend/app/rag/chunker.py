@@ -32,12 +32,20 @@ def chunk_file(file_dict):
     Convert a scanned file into chunks with metadata.
     """
 
+    path = file_dict["path"].lower()
+
     chunks = chunk_text(file_dict["content"])
 
-    return [
+    chunk_objects = [
         {
             "content": chunk,
             "path": file_dict["path"]
         }
         for chunk in chunks
     ]
+
+    # Prioritize README files by duplicating their chunks
+    if "readme" in path or path.endswith(".md"):
+        chunk_objects = chunk_objects * 3
+
+    return chunk_objects
