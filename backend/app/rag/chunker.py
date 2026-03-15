@@ -32,6 +32,9 @@ def chunk_file(file_dict):
     Convert a scanned file into chunks with metadata.
     """
 
+    if not file_dict["content"].strip():
+        return []
+
     path = file_dict["path"].lower()
 
     chunks = chunk_text(file_dict["content"])
