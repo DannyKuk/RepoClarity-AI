@@ -28,15 +28,8 @@ def chunk_text(text: str, chunk_size: int = 800, overlap: int = 200):
     return chunks
 
 def chunk_file(file_dict):
-    """
-    Convert a scanned file into chunks with metadata.
-    """
-
-    if not file_dict["content"].strip():
-        return []
 
     path = file_dict["path"].lower()
-
     chunks = chunk_text(file_dict["content"])
 
     chunk_objects = [
@@ -47,8 +40,21 @@ def chunk_file(file_dict):
         for chunk in chunks
     ]
 
-    # Prioritize README files by duplicating their chunks
-    if "readme" in path or path.endswith(".md"):
-        chunk_objects = chunk_objects * 3
+    weight = 1
 
-    return chunk_objects
+    if "readme" in path:
+        weight = 4
+
+    elif path.endswith("package.json"):
+        weight = 3
+
+    elif "config" in path:
+        weight = 3
+
+    elif "main" in path or "app" in path:
+        weight = 3
+
+    elif "/pages/" in path or "/components/" in path:
+        weight = 2
+
+    return chunk_objects * weight
