@@ -4,6 +4,7 @@ from app.rag.embedder import embed_texts, embedding_dimension
 from app.rag.vector_store import VectorStore
 from app.rag.repo_summary import generate_repo_summary
 from app.repo.framework_detector import detect_framework
+from app.repo.file_prioritizer import get_file_weight
 
 
 def build_index(repo_path: str) -> VectorStore:
@@ -30,9 +31,10 @@ def build_index(repo_path: str) -> VectorStore:
     for file in files:
         file_chunks = chunk_file(file)
 
-        # skip empty chunk results
+        weight = get_file_weight(file["path"], framework)
+
         if file_chunks:
-            chunks.extend(file_chunks)
+            chunks.extend(file_chunks * weight)
 
     print(f"Chunks generated: {len(chunks)}")
 
