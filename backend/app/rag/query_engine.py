@@ -11,6 +11,7 @@ def answer_question(question, vector_store, model=None):
     chunks = retrieve(question, vector_store, k=20)
 
     framework = vector_store.framework or "unknown"
+    entrypoints = vector_store.entrypoints
     summary = vector_store.summary or ""
 
     # Build context but limit chunk size to avoid huge prompts
@@ -24,7 +25,11 @@ def answer_question(question, vector_store, model=None):
         prompt = f"""
             You are analyzing a software repository.
             
-            Detected framework: {framework}
+            Detected framework: 
+            {framework}
+            
+            Entrypoints:
+            {entrypoints}
 
             Repository summary:
             {summary}
@@ -46,7 +51,11 @@ def answer_question(question, vector_store, model=None):
         prompt = f"""
             You are analyzing a software repository.
             
-            Detected framework: {framework}
+            Detected framework: 
+            {framework}
+            
+            Entrypoints:
+            {entrypoints}
             
             Repository summary:
             {summary}

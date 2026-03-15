@@ -5,6 +5,7 @@ from app.rag.vector_store import VectorStore
 from app.rag.repo_summary import generate_repo_summary
 from app.repo.framework_detector import detect_framework
 from app.repo.file_prioritizer import get_file_weight
+from app.repo.entrypoint_detector import detect_entrypoints
 
 
 def build_index(repo_path: str) -> VectorStore:
@@ -21,6 +22,9 @@ def build_index(repo_path: str) -> VectorStore:
 
     framework = detect_framework(repo_path)
     print(f"Detected framework: {framework}")
+
+    entrypoints = detect_entrypoints(repo_path, framework)
+    print(f"Detected entrypoints: {entrypoints}")
 
     print("Generating repository summary...")
     summary = generate_repo_summary(files)
@@ -52,6 +56,7 @@ def build_index(repo_path: str) -> VectorStore:
     print("Building vector store...")
     vector_store = VectorStore(embedding_dimension())
     vector_store.framework = framework
+    vector_store.entrypoints = entrypoints
     vector_store.summary = summary
     vector_store.add(embeddings, chunks)
 

@@ -11,6 +11,7 @@ class VectorStore:
         self.documents = []
         self.summary = None
         self.framework = None
+        self.entrypoints = []
 
     def add(self, embeddings, docs):
         """
@@ -50,16 +51,18 @@ class VectorStore:
         # Save FAISS index
         faiss.write_index(self.index, str(path / "index.faiss"))
 
-        # Save documents metadata
         with open(path / "documents.pkl", "wb") as f:
             pickle.dump(self.documents, f)
 
         with open(path / "framework.txt", "w", encoding="utf-8") as f:
             f.write(self.framework or "")
 
-        # Save summary
         with open(path / "summary.txt", "w", encoding="utf-8") as f:
             f.write(self.summary or "")
+
+        with open(path / "entrypoints.txt", "w", encoding="utf-8") as f:
+            for ep in self.entrypoints:
+                f.write(ep + "\n")
 
     def load(self, path):
         """
@@ -71,7 +74,6 @@ class VectorStore:
         # Load FAISS index
         self.index = faiss.read_index(str(path / "index.faiss"))
 
-        # Load documents
         documents_file = path / "documents.pkl"
         if documents_file.exists():
             with open(documents_file, "rb") as f:
@@ -82,8 +84,12 @@ class VectorStore:
             with open(framework_file, "r", encoding="utf-8") as f:
                 self.framework = f.read().strip()
 
-        # Load summary
         summary_file = path / "summary.txt"
         if summary_file.exists():
             with open(summary_file, "r", encoding="utf-8") as f:
                 self.summary = f.read()
+
+        entry_file = path / "entrypoints.txt"
+        if entry_file.exists():
+            with open(entry_file, "r", encoding="utf-8") as f:
+                self.entrypoints = [line.strip() for line in f.readlines()]
