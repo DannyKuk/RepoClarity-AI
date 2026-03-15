@@ -10,6 +10,7 @@ def answer_question(question, vector_store, model=None):
     # Retrieve the most relevant chunks
     chunks = retrieve(question, vector_store, k=20)
 
+    framework = vector_store.framework or "unknown"
     summary = vector_store.summary or ""
 
     # Build context but limit chunk size to avoid huge prompts
@@ -22,6 +23,8 @@ def answer_question(question, vector_store, model=None):
     if is_overview_question(question):
         prompt = f"""
             You are analyzing a software repository.
+            
+            Detected framework: {framework}
 
             Repository summary:
             {summary}
@@ -42,6 +45,8 @@ def answer_question(question, vector_store, model=None):
     else:
         prompt = f"""
             You are analyzing a software repository.
+            
+            Detected framework: {framework}
             
             Repository summary:
             {summary}

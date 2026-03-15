@@ -10,6 +10,7 @@ class VectorStore:
         self.index = faiss.IndexFlatL2(dimension)
         self.documents = []
         self.summary = None
+        self.framework = None
 
     def add(self, embeddings, docs):
         """
@@ -53,6 +54,9 @@ class VectorStore:
         with open(path / "documents.pkl", "wb") as f:
             pickle.dump(self.documents, f)
 
+        with open(path / "framework.txt", "w", encoding="utf-8") as f:
+            f.write(self.framework or "")
+
         # Save summary
         with open(path / "summary.txt", "w", encoding="utf-8") as f:
             f.write(self.summary or "")
@@ -72,6 +76,11 @@ class VectorStore:
         if documents_file.exists():
             with open(documents_file, "rb") as f:
                 self.documents = pickle.load(f)
+
+        framework_file = path / "framework.txt"
+        if framework_file.exists():
+            with open(framework_file, "r", encoding="utf-8") as f:
+                self.framework = f.read().strip()
 
         # Load summary
         summary_file = path / "summary.txt"

@@ -3,6 +3,7 @@ from app.rag.chunker import chunk_file
 from app.rag.embedder import embed_texts, embedding_dimension
 from app.rag.vector_store import VectorStore
 from app.rag.repo_summary import generate_repo_summary
+from app.repo.framework_detector import detect_framework
 
 
 def build_index(repo_path: str) -> VectorStore:
@@ -16,6 +17,9 @@ def build_index(repo_path: str) -> VectorStore:
 
     if not files:
         raise RuntimeError("No files found to index.")
+
+    framework = detect_framework(repo_path)
+    print(f"Detected framework: {framework}")
 
     print("Generating repository summary...")
     summary = generate_repo_summary(files)
@@ -45,6 +49,7 @@ def build_index(repo_path: str) -> VectorStore:
 
     print("Building vector store...")
     vector_store = VectorStore(embedding_dimension())
+    vector_store.framework = framework
     vector_store.summary = summary
     vector_store.add(embeddings, chunks)
 
