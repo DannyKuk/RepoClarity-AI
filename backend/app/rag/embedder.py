@@ -14,8 +14,6 @@ def embed_texts(texts, batch_size: int = 128):
     if not texts:
         return []
 
-    print(f"Embedding model: {model}")
-
     return model.encode(
         texts,
         batch_size=batch_size,
