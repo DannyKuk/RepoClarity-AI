@@ -29,7 +29,7 @@
           "
         >
           <div class="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-            {{ message.role === 'user' ? 'You' : 'RepoMind' }}
+            {{ message.role === 'user' ? 'You' : 'RepoClarity' }}
           </div>
 
           <!-- User -->
@@ -110,7 +110,7 @@
       <div v-if="loading" class="flex justify-start">
         <div class="max-w-[85%] rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3">
           <div class="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-            RepoMind
+            RepoClarity
           </div>
           <div class="flex items-center gap-2 text-sm text-neutral-400">
             <span class="h-2 w-2 animate-pulse rounded-full bg-neutral-500"/>

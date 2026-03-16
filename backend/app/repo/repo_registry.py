@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 
 
-REPOMIND_HOME = Path.home() / ".repomind"
-INDEX_DIR = REPOMIND_HOME / "indexes"
-REGISTRY_FILE = REPOMIND_HOME / "repos.json"
+REPOCLARITY_HOME = Path.home() / ".repoclarity"
+INDEX_DIR = REPOCLARITY_HOME / "indexes"
+REGISTRY_FILE = REPOCLARITY_HOME / "repos.json"
 
 
 def ensure_directories():
-    REPOMIND_HOME.mkdir(exist_ok=True)
+    REPOCLARITY_HOME.mkdir(exist_ok=True)
     INDEX_DIR.mkdir(exist_ok=True)
 
     if not REGISTRY_FILE.exists():

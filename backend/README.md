@@ -1,6 +1,6 @@
-# RepoMind Backend
+# RepoClarity AI Backend
 
-RepoMind is a **local AI assistant for exploring code repositories**.
+RepoClarity AI is a **local AI assistant for exploring code repositories**.
 It indexes a repository, builds a semantic vector index, and lets you **ask questions about the codebase** using local
 LLMs via **Ollama**.
 
@@ -113,12 +113,12 @@ GET /health
 
 # CLI Usage
 
-RepoMind also provides a CLI for local interaction.
+RepoClarity AI also provides a CLI for local interaction.
 
 ## List indexed repositories
 
 ```bash
-repomind repos
+repoclarity repos
 ```
 
 ---
@@ -126,13 +126,13 @@ repomind repos
 ## Index a repository
 
 ```bash
-repomind index <path> --name <repo-name>
+repoclarity index <path> --name <repo-name>
 ```
 
 Example:
 
 ```bash
-repomind index "C:\projects\klyra" --name klyra
+repoclarity index "C:\projects\website" --name website
 ```
 
 ---
@@ -140,13 +140,13 @@ repomind index "C:\projects\klyra" --name klyra
 ## Ask a question
 
 ```bash
-repomind ask <repo> "question"
+repoclarity ask <repo> "question"
 ```
 
 Example:
 
 ```bash
-repomind ask klyra "What does this project do?"
+repoclarity ask website "What does this project do?"
 ```
 
 ---
@@ -154,13 +154,13 @@ repomind ask klyra "What does this project do?"
 ## Interactive mode
 
 ```bash
-repomind ask <repo>
+repoclarity ask <repo>
 ```
 
 Example:
 
 ```bash
-repomind ask klyra
+repoclarity ask website
 ```
 
 Then ask questions interactively:
@@ -183,7 +183,7 @@ exit
 You can override the default LLM:
 
 ```bash
-repomind ask klyra "Explain the project" --model qwen2.5-coder
+repoclarity ask <repo> "Explain the project" --model qwen2.5-coder
 ```
 
 ---
@@ -191,7 +191,7 @@ repomind ask klyra "Explain the project" --model qwen2.5-coder
 ## List installed Ollama models
 
 ```bash
-repomind models
+repoclarity models
 ```
 
 ---
@@ -199,13 +199,13 @@ repomind models
 ## Reindex a repository
 
 ```bash
-repomind reindex <repo>
+repoclarity reindex <repo>
 ```
 
 Example:
 
 ```bash
-repomind reindex klyra
+repoclarity reindex website
 ```
 
 ---
@@ -213,13 +213,13 @@ repomind reindex klyra
 ## Remove a repository
 
 ```bash
-repomind remove <repo>
+repoclarity remove <repo>
 ```
 
 Example:
 
 ```bash
-repomind remove klyra
+repoclarity remove website
 ```
 
 ---
@@ -252,8 +252,8 @@ Body:
 
 ```json
 {
-  "name": "klyra",
-  "path": "C:/projects/klyra"
+  "name": "website",
+  "path": "C:/projects/website"
 }
 ```
 
@@ -285,7 +285,7 @@ Body:
 
 ```json
 {
-  "repo": "klyra",
+  "repo": "website",
   "question": "What does this project do?",
   "model": "qwen2.5-coder"
 }
@@ -317,7 +317,7 @@ app/
 
 # RAG Pipeline
 
-RepoMind uses a standard RAG architecture:
+RepoClarity AI uses a standard RAG architecture:
 
 ```
 scan repository

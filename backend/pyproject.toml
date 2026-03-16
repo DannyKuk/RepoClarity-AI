@@ -1,5 +1,5 @@
 [project]
-name = "repomind"
+name = "repoclarity"
 version = "0.1.0"
 description = "Chat with any code repository locally using Ollama and FAISS"
 authors = [{ name = "Danny Kukic" }]
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-repomind = "app.cli.main:app"
+repoclarity = "app.cli.main:app"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

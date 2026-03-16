@@ -13,7 +13,7 @@ from app.rag.vector_store import VectorStore
 from app.rag.query_engine import answer_question
 from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos, get_repo, remove_repo
 
-app = typer.Typer(help="RepoMind CLI - chat with a codebase locally")
+app = typer.Typer(help="RepoClarity CLI - chat with a codebase locally")
 
 DEFAULT_INDEX_DIR = Path("./index")
 
@@ -74,7 +74,7 @@ def ask(
 
         return
 
-    print(f"[bold blue]RepoMind chat[/bold blue] ([bold]{repo}[/bold])")
+    print(f"[bold blue]RepoClarity chat[/bold blue] ([bold]{repo}[/bold])")
     print(f"[bold blue]Model:[/bold blue] {model_name}")
     print("Type 'exit' to quit.\n")
 
@@ -90,7 +90,7 @@ def ask(
 
         answer, sources = answer_question(user_input, vector_store, model=model)
 
-        print(f"\n[bold green]RepoMind[/bold green] [dim]({model_name})[/dim]:")
+        print(f"\n[bold green]RepoClarity[/bold green] [dim]({model_name})[/dim]:")
         print(answer)
 
         print("\n[bold magenta]Sources:[/bold magenta]")

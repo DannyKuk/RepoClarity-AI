@@ -4,7 +4,7 @@ import requests
 
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = os.getenv("REPOMIND_MODEL", "qwen2.5-coder")
+DEFAULT_MODEL = os.getenv("REPOCLARITY_MODEL", "qwen2.5-coder")
 
 
 def ask_ollama(prompt: str, model: str | None = None):
