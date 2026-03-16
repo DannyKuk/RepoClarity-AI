@@ -1,36 +1,27 @@
-import type {Ref} from 'vue'
-
-interface Model {
-    id: string
-    name: string
-}
-
 export const useModelsStore = defineStore('models', () => {
-    // State
-    const models: Ref<Model[]> = ref([])
-    const loaded = ref(false)
+    const config = useRuntimeConfig()
+
+    const models = ref<string[]>([])
     const loading = ref(false)
+    const loaded = ref(false)
     const error = ref<string | null>(null)
 
-    // Getters (optional but very useful)
-    const isEmpty = computed(() => models.value.length === 0)
-    const modelById = (id: string) =>
-        computed(() => models.value.find(m => m.id === id) ?? null)
-
-    // Actions
     async function fetchModels(force = false) {
-        if (loaded.value && !force) return
+        if ((loaded.value && !force) || loading.value) return
 
         loading.value = true
         error.value = null
 
         try {
-            models.value = await $fetch<Model[]>('/api/models')
+            const res = await $fetch<{ models: string[] }>(
+                `${config.public.apiBase}/models`
+            )
+
+            models.value = res.models
             loaded.value = true
         } catch (err) {
-            console.error('Failed to fetch models:', err)
-            error.value = err instanceof Error ? err.message : 'Unknown error'
-            // Optional: models.value = []   // ← clear on error?
+            console.error(err)
+            error.value = 'Failed to fetch models'
         } finally {
             loading.value = false
         }
@@ -40,27 +31,12 @@ export const useModelsStore = defineStore('models', () => {
         await fetchModels(true)
     }
 
-    function reset() {
-        models.value = []
-        loaded.value = false
-        loading.value = false
-        error.value = null
-    }
-
     return {
-        // state
         models,
-        loaded,
         loading,
+        loaded,
         error,
-
-        // getters
-        isEmpty,
-        modelById,
-
-        // actions
         fetchModels,
-        reloadModels,
-        reset,
+        reloadModels
     }
 })

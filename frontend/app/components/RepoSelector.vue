@@ -76,16 +76,14 @@ const modalOpen = ref(false)
 const loading = ref(false)
 const errorVisible = ref(false)
 
-function closeAlert() {
-  errorVisible.value = false
-}
-
 async function addRepo() {
+  const config = useRuntimeConfig()
+
   loading.value = true
   errorVisible.value = false
 
   try {
-    await $fetch('http://localhost:8000/repos/index', {
+    await $fetch(`${config.public.apiBase}/repos/index`, {
       method: 'POST',
       body: {
         name: repoName.value,

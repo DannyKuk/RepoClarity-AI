@@ -6,3 +6,9 @@
     </NuxtLayout>
   </UApp>
 </template>
+
+<script setup lang="ts">
+const modelsStore = useModelsStore()
+
+await callOnce(() => modelsStore.fetchModels())
+</script>
