@@ -11,6 +11,19 @@
       </p>
 
       <p>{{ msg.text }}</p>
+
+      <div
+          v-if="msg.sources"
+          class="mt-3 text-xs text-neutral-400"
+      >
+        <div class="mb-1 font-semibold">Sources</div>
+
+        <ul class="space-y-1">
+          <li v-for="s in msg.sources" :key="s">
+            {{ s }}
+          </li>
+        </ul>
+      </div>
     </div>
 
     <form @submit.prevent="send">
@@ -49,10 +62,13 @@ const send = async () => {
 
   const res = await askRepo(props.repo, question, props.model)
 
+  console.log(res)
+
   messages.value.push({
     id: Date.now() + 1,
     role: "RepoMind",
-    text: res.answer
+    text: res.answer,
+    sources: res.sources,
   })
 }
 </script>
