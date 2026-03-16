@@ -6,7 +6,7 @@ from app.api.routes_query import router as query_router
 from app.api.routes_models import router as models_router
 
 app = FastAPI(
-    title="RepoMind API",
+    title="RepoClarity AI API",
     description="Local AI assistant for exploring repositories.",
     version="1.0.0",
 )
