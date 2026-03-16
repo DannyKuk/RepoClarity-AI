@@ -20,8 +20,9 @@
 
 <script setup lang="ts">
 import { getRepos } from "~/composables/api";
+import type {Repo} from "~/types/api";
 
-const repos = ref<any[]>([])
+const repos = ref<Repo[]>([])
 
 onMounted(async () => {
   repos.value = await getRepos()

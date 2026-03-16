@@ -8,7 +8,7 @@
     >
       <div
           v-if="messages.length === 0"
-          class="flex h-full min-h-[300px] items-center justify-center text-sm text-neutral-500"
+          class="flex h-full min-h-75 items-center justify-center text-sm text-neutral-500"
       >
         Ask something about
         <span class="mx-1 font-semibold text-neutral-300">{{ repo }}</span>.
@@ -35,7 +35,7 @@
           <!-- User -->
           <div
               v-if="message.role === 'user'"
-              class="whitespace-pre-wrap break-words text-sm leading-6"
+              class="whitespace-pre-wrap wrap-break-word text-sm leading-6"
           >
             {{ message.text }}
           </div>
@@ -43,13 +43,13 @@
           <!-- Assistant -->
           <div v-else class="space-y-4">
 
-            <template v-for="(block, i) in parseBlocks(message.text)" :key="i">
+            <template v-for="(block, i) in message.blocks" :key="i">
 
               <!-- Markdown -->
               <div
                   v-if="block.type === 'markdown'"
                   class="prose prose-invert max-w-none"
-                  v-html="renderMarkdown(block.content)"
+                  v-html="block.html"
               />
 
               <!-- Code -->
@@ -71,7 +71,7 @@
                 {{ message.framework }}
               </div>
 
-              <div v-if="message.entrypoints && message.entrypoints.length">
+              <div v-if="message.entrypoints?.length">
                 <div class="mb-1 font-semibold text-neutral-200">Entrypoints</div>
                 <ul class="space-y-1">
                   <li
@@ -87,7 +87,7 @@
 
             <!-- Sources -->
             <div
-                v-if="message.sources && message.sources.length"
+                v-if="message.sources?.length"
                 class="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3 text-xs"
             >
               <div class="mb-2 font-semibold text-neutral-200">Sources</div>
@@ -127,7 +127,7 @@
           v-model="input"
           rows="1"
           placeholder="Ask about the repository..."
-          class="min-h-[52px] flex-1 resize-none rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+          class="min-h-13 flex-1 resize-none rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
           :disabled="loading || !repo"
           @keydown.enter.exact.prevent="send"
           @keydown.enter.shift.exact.stop
@@ -152,18 +152,28 @@ import DOMPurify from "dompurify"
 import CodeBlock from "~/components/CodeBlock.vue"
 import { askRepo } from "~/composables/api"
 
+type MarkdownBlock = {
+  type: "markdown"
+  html: string
+}
+
+type CodeBlockType = {
+  type: "code"
+  code: string
+  lang: string
+}
+
+type Block = MarkdownBlock | CodeBlockType
+
 type ChatMessage = {
   id: number
   role: "user" | "assistant"
   text: string
+  blocks?: Block[]
   sources?: string[]
   framework?: string | null
   entrypoints?: string[]
 }
-
-type Block =
-    | { type: "markdown"; content: string }
-    | { type: "code"; code: string; lang?: string }
 
 const props = defineProps<{ repo: string; model?: string }>()
 
@@ -174,12 +184,12 @@ const messagesContainer = ref<HTMLElement | null>(null)
 
 const trimmedInput = computed(() => input.value.trim())
 
-function parseBlocks(text: string): Block[] {
-  const blocks: Block[] = []
+function parseBlocks(text: string): { type: "markdown"; content: string } | any {
+  const blocks: any[] = []
   const regex = /```(\w+)?\n([\s\S]*?)```/g
 
   let lastIndex = 0
-  let match
+  let match: RegExpExecArray | null
 
   while ((match = regex.exec(text))) {
     if (match.index > lastIndex) {
@@ -189,10 +199,12 @@ function parseBlocks(text: string): Block[] {
       })
     }
 
+    const [, lang, code] = match
+
     blocks.push({
       type: "code",
-      lang: match[1],
-      code: match[2]
+      lang: lang ?? "text",
+      code: code
     })
 
     lastIndex = match.index + match[0].length
@@ -208,9 +220,31 @@ function parseBlocks(text: string): Block[] {
   return blocks
 }
 
-function renderMarkdown(text: string) {
-  const html = marked.parse(text)
+async function renderMarkdown(text: string): Promise<string> {
+  const html = await marked.parse(text)
   return DOMPurify.sanitize(html)
+}
+
+async function buildBlocks(text: string): Promise<Block[]> {
+  const parsed = parseBlocks(text)
+  const result: Block[] = []
+
+  for (const block of parsed) {
+    if (block.type === "markdown") {
+      result.push({
+        type: "markdown",
+        html: await renderMarkdown(block.content)
+      })
+    } else {
+      result.push({
+        type: "code",
+        code: block.code,
+        lang: block.lang
+      })
+    }
+  }
+
+  return result
 }
 
 async function scrollToBottom() {
@@ -238,16 +272,19 @@ async function send() {
   try {
     const res = await askRepo(props.repo, question, props.model)
 
+    const blocks = await buildBlocks(res.answer)
+
     messages.value.push({
       id: Date.now() + 1,
       role: "assistant",
       text: res.answer,
+      blocks,
       sources: res.sources ?? [],
       framework: res.framework ?? null,
       entrypoints: res.entrypoints ?? []
     })
 
-  } catch (error: any) {
+  } catch {
     messages.value.push({
       id: Date.now() + 1,
       role: "assistant",
