@@ -26,7 +26,12 @@
                 @click="modalOpen = false"
                 :loading="loading"
             />
-            <UButton label="Add" variant="outline" @click="addRepo" :loading="loading"/>
+            <UButton
+                label="Add"
+                variant="outline"
+                @click="addRepo"
+                :loading="loading"
+            />
           </div>
         </template>
       </UModal>
@@ -42,6 +47,21 @@
         </NuxtLink>
       </li>
     </ul>
+
+    <!-- Bottom alert -->
+    <div
+        v-if="errorVisible"
+        class="fixed bottom-4 left-[5%] w-[90vw] z-50"
+    >
+      <UAlert
+          color="error"
+          variant="soft"
+          title="Failed to index repository"
+          description="Check that the repository path exists and the backend can access it."
+          icon="i-lucide-alert-circle"
+          :close-button="{ icon: 'i-lucide-x' }"
+      />
+    </div>
   </div>
 </template>
 
@@ -54,9 +74,16 @@ const repoSourcePath = ref('')
 const repoName = ref('')
 const modalOpen = ref(false)
 const loading = ref(false)
+const errorVisible = ref(false)
+
+function closeAlert() {
+  errorVisible.value = false
+}
 
 async function addRepo() {
   loading.value = true
+  errorVisible.value = false
+
   try {
     await $fetch('http://localhost:8000/repos/index', {
       method: 'POST',
@@ -74,11 +101,16 @@ async function addRepo() {
     modalOpen.value = false
   } catch (err) {
     console.error('Failed to index repo', err)
+    loading.value = false
+    errorVisible.value = true
   }
-  loading.value = false
 }
 
 onMounted(async () => {
   repos.value = await getRepos()
+})
+
+watch(modalOpen, (v) => {
+  if (v) errorVisible.value = false
 })
 </script>

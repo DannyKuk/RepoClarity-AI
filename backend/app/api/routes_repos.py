@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -41,6 +43,20 @@ def index_repo(request: IndexRepoRequest):
     """
     Index a repository and register it.
     """
+
+    repo_path = Path(request.path)
+
+    if not repo_path.exists():
+        raise HTTPException(
+            status_code=400,
+            detail="Repository path does not exist"
+        )
+
+    if not repo_path.is_dir():
+        raise HTTPException(
+            status_code=400,
+            detail="Provided path is not a directory"
+        )
 
     try:
         vector_store = build_index(request.path)
