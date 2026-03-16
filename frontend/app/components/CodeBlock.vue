@@ -6,12 +6,7 @@
         {{ language || 'code' }}
       </span>
 
-      <button
-          class="text-neutral-400 hover:text-white transition-colors duration-150"
-          @click="copy"
-      >
-        {{ copied ? 'Copied!' : 'Copy' }}
-      </button>
+      <UButton icon="i-lucide-copy" size="sm" color="neutral" variant="solid" @click="copy">{{ copied ? 'Copied!' : 'Copy' }}</UButton>
     </div>
 
     <!-- Code container -->
