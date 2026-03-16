@@ -4,8 +4,8 @@ export const getRepos = () => {
     return $fetch(`${API}/repos`)
 }
 
-export const askRepo = (repo: string, question: string, model?: string) => {
-    return $fetch(`${API}/query/ask`, {
+export const askRepo = async (repo: string, question: string, model?: string) => {
+    return await $fetch(`${API}/query/ask`, {
         method: "POST",
         body: {
             repo,
