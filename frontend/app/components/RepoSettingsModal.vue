@@ -1,44 +1,76 @@
 <template>
   <UModal title="Repository Settings" v-model:open="open">
     <template #body>
-      <div v-if="!confirmingDelete" class="flex flex-col gap-3">
-        <UButton
-            label="Reindex"
-            :loading="loading"
-            :disabled="loading"
-            @click="handleReindex"
-        />
-
-        <UButton
-            label="Remove"
-            color="error"
-            :disabled="loading"
-            @click="confirmingDelete = true"
-        />
-      </div>
-
-      <!-- CONFIRM DELETE STATE -->
-      <div v-else class="flex flex-col gap-3">
+      <div class="flex flex-col gap-4">
+        <!-- context -->
         <p class="text-sm text-neutral-400">
-          Are you sure you want to remove
-          <strong>{{ repo?.name }}</strong>?
+          Managing <strong>{{ repo?.name }}</strong>
         </p>
 
-        <div class="flex justify-end gap-2">
-          <UButton
-              label="Cancel"
-              variant="outline"
-              @click="confirmingDelete = false"
-              :disabled="loading"
-          />
+        <!-- NORMAL STATE -->
+        <div v-if="!confirmingDelete" class="flex flex-col gap-3">
+          <!-- REINDEX -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-neutral-300">
+              Rebuild embeddings for this repository
+            </span>
 
-          <UButton
-              label="Yes, remove"
-              color="error"
-              :loading="loading"
-              :disabled="loading"
-              @click="handleDelete"
-          />
+            <UButton
+                label="Reindex"
+                size="sm"
+                variant="outline"
+                icon="i-lucide-refresh-cw"
+                :loading="loading"
+                :disabled="loading"
+                @click="handleReindex"
+            />
+          </div>
+
+          <!-- divider -->
+          <div class="border-t border-neutral-800" />
+
+          <!-- DELETE -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-neutral-300">
+              Permanently delete repo and index
+            </span>
+
+            <UButton
+                label="Remove"
+                size="sm"
+                color="error"
+                variant="outline"
+                icon="i-lucide-trash"
+                :disabled="loading"
+                @click="confirmingDelete = true"
+            />
+          </div>
+        </div>
+
+        <!-- CONFIRM DELETE -->
+        <div v-else class="flex flex-col gap-3">
+          <p class="text-sm text-neutral-400">
+            This will permanently remove
+            <strong>{{ repo?.name }}</strong> and its index.
+            This action cannot be undone.
+          </p>
+
+          <div class="flex justify-end gap-2">
+            <UButton
+                label="Cancel"
+                variant="outline"
+                @click="confirmingDelete = false"
+                :disabled="loading"
+            />
+
+            <UButton
+                label="Yes, remove"
+                color="error"
+                :loading="loading"
+                :disabled="loading"
+                @click="handleDelete"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -70,7 +102,6 @@ function handleDelete() {
   if (props.repo) emit('delete', props.repo)
 }
 
-// reset state when modal opens
 watch(open, (v) => {
   if (v) confirmingDelete.value = false
 })
