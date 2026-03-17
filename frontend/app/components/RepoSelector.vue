@@ -1,58 +1,25 @@
 <template>
   <div>
-    <div class="flex flex-row justify-between mb-3">
+    <div class="flex justify-between mb-3">
       <h2 class="font-semibold">Repositories</h2>
 
-      <UModal title="Add Repository" v-model:open="modalOpen">
-        <UButton
-            icon="i-lucide-plus"
-            size="sm"
-            color="neutral"
-            variant="solid"
-            @click="modalOpen = true"
-        />
-
-        <template #body>
-          <div class="flex flex-col gap-2 mb-5">
-            <UInput placeholder="Source Path" v-model="repoSourcePath" />
-            <UInput placeholder="Name" v-model="repoName" />
-          </div>
-
-          <div class="flex flex-row gap-2 justify-end">
-            <UButton
-                label="Cancel"
-                color="error"
-                variant="outline"
-                @click="modalOpen = false"
-                :loading="loading"
-            />
-            <UButton
-                label="Add"
-                variant="outline"
-                @click="addRepo"
-                :loading="loading"
-            />
-          </div>
-        </template>
-      </UModal>
+      <AddRepoModal
+          v-model:open="modalOpen"
+          :loading="loading"
+          @add="handleAdd"
+      />
     </div>
 
     <ul class="space-y-2">
-      <li v-for="repo in repos" :key="repo.name">
-        <NuxtLink
-            :to="`/repo/${repo.name}`"
-            class="block p-2 rounded hover:bg-neutral-800"
-        >
-          <div class="flex justify-between">
-            {{ repo.name }}
-            <UBadge v-if="repo.framework" size="sm" variant="outline" color="secondary">{{ repo.framework }}</UBadge>
-          </div>
-        </NuxtLink>
-        <USeparator class="my-1"/>
-      </li>
+      <RepoItem
+          v-for="repo in repos"
+          :key="repo.name"
+          :repo="repo"
+          @settings="(repo) => console.log('settings for', repo)"
+      />
     </ul>
 
-    <!-- Bottom alert -->
+    <!-- alert -->
     <div
         v-if="errorVisible"
         class="fixed bottom-4 left-[5%] w-[90vw] z-50"
@@ -64,55 +31,43 @@
           description="Check that the repository path exists and the backend can access it."
           icon="i-lucide-alert-circle"
           :close-button="{ icon: 'i-lucide-x' }"
+          @close="errorVisible = false"
       />
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import { getRepos } from "~/composables/api"
-import type { Repo } from "~/types/api"
-
-const repos = ref<Repo[]>([])
-const repoSourcePath = ref('')
-const repoName = ref('')
 const modalOpen = ref(false)
-const loading = ref(false)
-const errorVisible = ref(false)
 
-async function addRepo() {
-  const config = useRuntimeConfig()
+const {
+  repos,
+  loading,
+  errorVisible,
+  fetchRepos,
+  addRepo
+} = useRepos()
 
-  loading.value = true
-  errorVisible.value = false
+onMounted(fetchRepos)
 
-  try {
-    await $fetch(`${config.public.apiBase}/repos/index`, {
-      method: 'POST',
-      body: {
-        name: repoName.value,
-        path: repoSourcePath.value
-      }
-    })
+async function handleAdd({ name, path }: { name: string; path: string }) {
+  const success = await addRepo(name, path)
 
-    repos.value = await getRepos()
-
-    repoName.value = ''
-    repoSourcePath.value = ''
-
+  if (success) {
     modalOpen.value = false
-  } catch (err) {
-    console.error('Failed to index repo', err)
-    loading.value = false
-    errorVisible.value = true
   }
 }
 
-onMounted(async () => {
-  repos.value = await getRepos()
+watch(modalOpen, (v) => {
+  if (v) {
+    errorVisible.value = false
+  }
 })
 
-watch(modalOpen, (v) => {
-  if (v) errorVisible.value = false
+watch(errorVisible, (v) => {
+  if (v) {
+    setTimeout(() => {
+      errorVisible.value = false
+    }, 4000)
+  }
 })
 </script>
