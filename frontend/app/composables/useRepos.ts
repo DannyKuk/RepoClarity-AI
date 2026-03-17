@@ -33,11 +33,57 @@ export function useRepos() {
         }
     }
 
+    async function reindexRepo(name: string) {
+        const config = useRuntimeConfig()
+
+        loading.value = true
+        errorVisible.value = false
+
+        try {
+            await $fetch(`${config.public.apiBase}/repos/${name}/reindex`, {
+                method: 'POST'
+            })
+
+            await fetchRepos()
+            return true
+        } catch (err) {
+            console.error('Failed to reindex repo', err)
+            errorVisible.value = true
+            return false
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function deleteRepo(name: string) {
+        const config = useRuntimeConfig()
+
+        loading.value = true
+        errorVisible.value = false
+
+        try {
+            await $fetch(`${config.public.apiBase}/repos/${name}`, {
+                method: 'DELETE'
+            })
+
+            await fetchRepos()
+            return true
+        } catch (err) {
+            console.error('Failed to delete repo', err)
+            errorVisible.value = true
+            return false
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         repos,
         loading,
         errorVisible,
         fetchRepos,
-        addRepo
+        addRepo,
+        reindexRepo,
+        deleteRepo
     }
 }

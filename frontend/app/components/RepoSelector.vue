@@ -15,9 +15,17 @@
           v-for="repo in repos"
           :key="repo.name"
           :repo="repo"
-          @settings="(repo) => console.log('settings for', repo)"
+          @settings="openSettings"
       />
     </ul>
+
+    <RepoSettingsModal
+        v-model:open="settingsOpen"
+        :repo="selectedRepo"
+        :loading="loading"
+        @reindex="handleReindex"
+        @delete="handleDelete"
+    />
 
     <!-- alert -->
     <div
@@ -37,6 +45,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import type {Repo} from "~/types/api";
+
 const modalOpen = ref(false)
 
 const {
@@ -44,10 +54,15 @@ const {
   loading,
   errorVisible,
   fetchRepos,
-  addRepo
+  addRepo,
+  reindexRepo,
+  deleteRepo,
 } = useRepos()
 
 onMounted(fetchRepos)
+
+const settingsOpen = ref(false)
+const selectedRepo = ref<Repo | null>(null)
 
 async function handleAdd({ name, path }: { name: string; path: string }) {
   const success = await addRepo(name, path)
@@ -55,6 +70,21 @@ async function handleAdd({ name, path }: { name: string; path: string }) {
   if (success) {
     modalOpen.value = false
   }
+}
+
+function openSettings(repo: Repo) {
+  selectedRepo.value = repo
+  settingsOpen.value = true
+}
+
+async function handleReindex(repo: Repo) {
+  const success = await reindexRepo(repo.name)
+  if (success) settingsOpen.value = false
+}
+
+async function handleDelete(repo: Repo) {
+  const success = await deleteRepo(repo.name)
+  if (success) settingsOpen.value = false
 }
 
 watch(modalOpen, (v) => {

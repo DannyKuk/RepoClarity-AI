@@ -20,7 +20,6 @@
       </NuxtLink>
 
       <UButton
-          v-if="false"
           icon="i-lucide-settings"
           size="sm"
           variant="ghost"
