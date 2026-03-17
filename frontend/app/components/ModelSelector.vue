@@ -3,6 +3,8 @@
     <USelect placeholder="default" variant="soft" v-model="model" :items="models" class="w-52"/>
 
     <UButton
+        color="secondary"
+        variant="soft"
         icon="i-lucide-refresh-cw"
         :loading="loading"
         @click="modelsStore.reloadModels()"

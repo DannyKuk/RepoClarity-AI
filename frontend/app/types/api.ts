@@ -12,4 +12,5 @@ export interface ModelsResponse {
 export interface Repo {
     name: string
     path: string
+    framework: string | null
 }

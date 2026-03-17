@@ -23,19 +23,35 @@ class IndexRepoRequest(BaseModel):
 class RepoResponse(BaseModel):
     name: str
     path: str
+    framework: str | None = None
 
 
 @router.get("/", response_model=list[RepoResponse])
 def get_repos():
-    """
-    List all indexed repositories.
-    """
     repos = list_repos()
 
-    return [
-        RepoResponse(name=name, path=path)
-        for name, path in repos.items()
-    ]
+    result = []
+
+    for name, path in repos.items():
+        framework_file = INDEX_DIR / name / "framework.txt"
+
+        framework = None
+        if framework_file.exists():
+            try:
+                content = framework_file.read_text().strip()
+                framework = content or None
+            except Exception:
+                pass
+
+        result.append(
+            RepoResponse(
+                name=name,
+                path=path,
+                framework=framework
+            )
+        )
+
+    return result
 
 
 @router.post("/index")

@@ -43,8 +43,12 @@
             :to="`/repo/${repo.name}`"
             class="block p-2 rounded hover:bg-neutral-800"
         >
-          {{ repo.name }}
+          <div class="flex justify-between">
+            {{ repo.name }}
+            <UBadge v-if="repo.framework" size="sm" variant="outline" color="secondary">{{ repo.framework }}</UBadge>
+          </div>
         </NuxtLink>
+        <USeparator class="my-1"/>
       </li>
     </ul>
 
