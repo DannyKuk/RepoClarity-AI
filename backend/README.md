@@ -1,9 +1,5 @@
 # RepoClarity AI Backend
 
-RepoClarity AI is a **local AI assistant for exploring code repositories**.
-It indexes a repository, builds a semantic vector index, and lets you **ask questions about the codebase** using local
-LLMs via **Ollama**.
-
 The backend provides:
 
 * a **CLI** for indexing and querying repositories
@@ -14,7 +10,7 @@ Everything runs **locally**.
 
 ---
 
-# Features
+## Features
 
 * Repository indexing with semantic embeddings
 * FAISS vector search
@@ -27,7 +23,7 @@ Everything runs **locally**.
 
 ---
 
-# Requirements
+## Requirements
 
 * Python **3.11+**
 * **Ollama** installed
@@ -47,7 +43,7 @@ https://ollama.com
 
 ---
 
-# Setup
+## Setup
 
 Create a virtual environment:
 
@@ -83,7 +79,7 @@ pip install -e .
 
 ---
 
-# Running the API server
+## Running the API server
 
 Start the backend server:
 
@@ -111,11 +107,11 @@ GET /health
 
 ---
 
-# CLI Usage
+## CLI Usage
 
 RepoClarity AI also provides a CLI for local interaction.
 
-## List indexed repositories
+### List indexed repositories
 
 ```bash
 repoclarity repos
@@ -123,7 +119,7 @@ repoclarity repos
 
 ---
 
-## Index a repository
+### Index a repository
 
 ```bash
 repoclarity index <path> --name <repo-name>
@@ -137,7 +133,7 @@ repoclarity index "C:\projects\website" --name website
 
 ---
 
-## Ask a question
+### Ask a question
 
 ```bash
 repoclarity ask <repo> "question"
@@ -151,7 +147,7 @@ repoclarity ask website "What does this project do?"
 
 ---
 
-## Interactive mode
+### Interactive mode
 
 ```bash
 repoclarity ask <repo>
@@ -178,7 +174,7 @@ exit
 
 ---
 
-## Select a model
+### Select a model
 
 You can override the default LLM:
 
@@ -188,7 +184,7 @@ repoclarity ask <repo> "Explain the project" --model qwen2.5-coder
 
 ---
 
-## List installed Ollama models
+### List installed Ollama models
 
 ```bash
 repoclarity models
@@ -196,7 +192,7 @@ repoclarity models
 
 ---
 
-## Reindex a repository
+### Reindex a repository
 
 ```bash
 repoclarity reindex <repo>
@@ -210,7 +206,7 @@ repoclarity reindex website
 
 ---
 
-## Remove a repository
+### Remove a repository
 
 ```bash
 repoclarity remove <repo>
@@ -224,7 +220,7 @@ repoclarity remove website
 
 ---
 
-# API Endpoints
+## API Endpoints
 
 ### Health
 
@@ -301,7 +297,7 @@ GET /models
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 app/
@@ -315,7 +311,7 @@ app/
 
 ---
 
-# RAG Pipeline
+## RAG Pipeline
 
 RepoClarity AI uses a standard RAG architecture:
 
@@ -337,7 +333,7 @@ generate answer with LLM
 
 ---
 
-# Development Notes
+## Development Notes
 
 The backend is designed to be:
 
@@ -347,8 +343,3 @@ The backend is designed to be:
 
 The frontend will interact with the API layer only.
 
----
-
-# License
-
-MIT

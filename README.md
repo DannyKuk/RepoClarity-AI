@@ -4,7 +4,7 @@ RepoClarity AI is a **local AI-powered assistant for understanding codebases**.
 
 It indexes your repository, builds a semantic understanding, and lets you **ask questions about your code** using local LLMs.
 
-Everything runs **fully local** — no cloud, no data leaks.
+Everything runs **fully local** - no cloud, no data leaks.
 
 ---
 
@@ -21,8 +21,8 @@ Everything runs **fully local** — no cloud, no data leaks.
 ## 🧩 Project Structure
 
 repoclarity-ai/ <br/>
-├── frontend/   # Nuxt UI (user interface) <br/>
-├── backend/    # FastAPI + RAG pipeline + CLI <br/>
+├ frontend/   # Nuxt UI (user interface) <br/>
+└ backend/    # FastAPI + RAG pipeline + CLI <br/>
 
 ---
 
