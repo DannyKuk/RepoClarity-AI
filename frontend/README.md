@@ -3,7 +3,7 @@ Web interface for RepoClarity AI, enabling repository indexing and AI-powered co
 ## Overview
 
 This frontend allows users to:
-* Index code repositories
+* Index/reindex/remove code repositories
 * Chat with AI models about the codebase
 * Switch between different AI providers
 
@@ -12,8 +12,10 @@ This frontend allows users to:
 ## Features
 
 * Repository indexing via backend API
-* AI-powered Q&A over indexed code
-* * Support for multiple AI models (local)
+* Repository reindexing via backend API
+* Repository removing via backend API
+* AI-powered Q&A over indexed code 
+* Support for multiple AI models (local)
 
 ## Requirements
 
