@@ -40,7 +40,9 @@ class RepositoryScanner:
         files = []
 
         for file in repo.rglob("*"):
-            if self.should_ignore(file):
+            relative = file.relative_to(repo)
+
+            if self.should_ignore(relative):
                 continue
 
             if not file.is_file():
