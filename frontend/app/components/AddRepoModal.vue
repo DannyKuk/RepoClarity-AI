@@ -36,6 +36,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
+
 const open = defineModel<boolean>('open')
 
 const props = defineProps<{
@@ -50,13 +52,15 @@ const repoName = ref('')
 const repoSourcePath = ref('')
 
 function handleSubmit() {
+  if (!repoName.value || !repoSourcePath.value) return
+
   emit('add', {
     name: repoName.value,
     path: repoSourcePath.value
   })
 }
 
-watch(open, (v) => {
+watch(() => open.value, (v) => {
   if (v) {
     repoName.value = ''
     repoSourcePath.value = ''
