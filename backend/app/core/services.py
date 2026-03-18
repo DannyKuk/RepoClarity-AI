@@ -1,5 +1,3 @@
-# app/core/services.py
-
 from app.rag.embedder import Embedder
 from app.rag.chunker import Chunker
 from app.rag.retriever import Retriever
