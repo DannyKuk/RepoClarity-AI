@@ -1,10 +1,7 @@
-from app.rag.embedder import embed_texts
+class Retriever:
+    def __init__(self, embedder):
+        self.embedder = embedder
 
-
-def retrieve(query: str, vector_store, k=5):
-
-    query_embedding = embed_texts([query])[0]
-
-    results = vector_store.search(query_embedding, k=k)
-
-    return results
+    def retrieve(self, query: str, vector_store, k: int = 5):
+        query_embedding = self.embedder.embed([query])[0]
+        return vector_store.search(query_embedding, k=k)

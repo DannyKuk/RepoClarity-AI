@@ -7,21 +7,31 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
+class Embedder:
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5", model=None):
+        self._model_name = model_name
+        self._model = model  # allows injection for tests
 
-def embed_texts(texts, batch_size: int = 128):
-    if not texts:
-        return []
+    def _get_model(self):
+        if self._model is None:
+            self._model = SentenceTransformer(self._model_name)
+        return self._model
 
-    return model.encode(
-        texts,
-        batch_size=batch_size,
-        show_progress_bar=True,
-        convert_to_numpy=True,
-        normalize_embeddings=True
-    )
+    def embed(self, texts, batch_size: int = 128):
+        if not texts:
+            return []
 
+        model = self._get_model()
 
-def embedding_dimension():
-    return model.get_sentence_embedding_dimension()
+        return model.encode(
+            texts,
+            batch_size=batch_size,
+            show_progress_bar=True,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )
+
+    def dimension(self):
+        model = self._get_model()
+        return model.get_sentence_embedding_dimension()

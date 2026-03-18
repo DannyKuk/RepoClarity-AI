@@ -1,66 +1,59 @@
 import shutil
-from pathlib import Path
 from typing import Optional
 
 import typer
-import subprocess
 from rich import print
 from rich.prompt import Prompt
 
-from app.rag.indexing_service import build_index
-from app.rag.embedder import embedding_dimension
-from app.rag.vector_store import VectorStore
-from app.rag.query_engine import answer_question
-from app.repo.repo_registry import register_repo, INDEX_DIR, list_repos, get_repo, remove_repo
+from app.core.services import Services
 
 app = typer.Typer(help="RepoClarity CLI - chat with a codebase locally")
 
-DEFAULT_INDEX_DIR = Path("./index")
+services = Services()
 
 
 @app.command()
 def index(repo_path: str, name: str):
-    """
-    Index a repository and register it.
-    """
-
     print(f"[bold blue]Indexing repository:[/bold blue] {repo_path}")
 
-    vector_store = build_index(repo_path)
+    vector_store = services.indexing_service.build_index(repo_path)
 
-    repo_index_dir = INDEX_DIR / name
-
+    repo_index_dir = services.registry.index_dir / name
     vector_store.save(repo_index_dir)
 
-    register_repo(name, repo_path)
+    services.registry.register(name, repo_path)
 
     print(f"[bold green]Repository indexed as:[/bold green] {name}")
 
 
 @app.command()
 def ask(
-    repo: str = typer.Argument(..., help="Repository name"),
-    question: Optional[str] = typer.Argument(None, help="Question to ask. If omitted, interactive chat mode starts.",),
-    model: str = typer.Option(None, "--model", "-m", help="LLM model to use"),
+        repo: str,
+        question: Optional[str] = typer.Argument(None),
+        model: Optional[str] = typer.Option(None, "--model", "-m"),
 ):
-    """
-    Ask a question about an indexed repository.
+    repo_path = services.registry.get(repo)
 
-    If no question is provided, start interactive chat mode.
-    """
+    if not repo_path:
+        print(f"[bold red]Repo '{repo}' not registered.[/bold red]")
+        raise typer.Exit(code=1)
 
-    model_name = model or "default"
-    index_dir = INDEX_DIR / repo
+    index_dir = services.registry.index_dir / repo
 
     if not index_dir.exists():
         print(f"[bold red]Repo '{repo}' not indexed.[/bold red]")
         raise typer.Exit(code=1)
 
-    vector_store = VectorStore(embedding_dimension())
-    vector_store.load(index_dir)
+    vector_store = services.vector_store_cls.load(index_dir)
 
-    if question is not None:
-        answer, sources = answer_question(question, vector_store, model=model)
+    model_name = model or services.llm.default_model
+
+    if question:
+        answer, sources = services.query_engine.answer(
+            question,
+            vector_store,
+            model=model,
+        )
 
         print("\n[bold cyan]Question:[/bold cyan]")
         print(question)
@@ -69,11 +62,11 @@ def ask(
         print(answer)
 
         print("\n[bold magenta]Sources:[/bold magenta]")
-        for source in sources:
-            print(f"- {source}")
-
+        for s in sources:
+            print(f"- {s}")
         return
 
+    # --- interactive ---
     print(f"[bold blue]RepoClarity chat[/bold blue] ([bold]{repo}[/bold])")
     print(f"[bold blue]Model:[/bold blue] {model_name}")
     print("Type 'exit' to quit.\n")
@@ -88,24 +81,25 @@ def ask(
             print("Bye.")
             break
 
-        answer, sources = answer_question(user_input, vector_store, model=model)
+        answer, sources = services.query_engine.answer(
+            user_input,
+            vector_store,
+            model=model,
+        )
 
         print(f"\n[bold green]RepoClarity[/bold green] [dim]({model_name})[/dim]:")
         print(answer)
 
         print("\n[bold magenta]Sources:[/bold magenta]")
-        for source in sources:
-            print(f"- {source}")
+        for s in sources:
+            print(f"- {s}")
 
         print()
 
+
 @app.command()
 def repos():
-    """
-    List all indexed repositories.
-    """
-
-    repos_list = list_repos()
+    repos_list = services.registry.list()
 
     if not repos_list:
         print("[bold red]No repositories indexed.[/bold red]")
@@ -116,13 +110,10 @@ def repos():
     for name, path in repos_list.items():
         print(f"- {name}: {path}")
 
+
 @app.command()
 def reindex(repo: str):
-    """
-    Rebuild the index for an already registered repository.
-    """
-
-    repo_path = get_repo(repo)
+    repo_path = services.registry.get(repo)
 
     if not repo_path:
         print(f"[bold red]Repository '{repo}' not registered.[/bold red]")
@@ -130,63 +121,46 @@ def reindex(repo: str):
 
     print(f"[bold blue]Reindexing repository:[/bold blue] {repo}")
 
-    vector_store = build_index(repo_path)
+    vector_store = services.indexing_service.build_index(repo_path)
 
-    repo_index_dir = INDEX_DIR / repo
-
+    repo_index_dir = services.registry.index_dir / repo
     vector_store.save(repo_index_dir)
 
     print("[bold green]Index updated.[/bold green]")
 
+
 @app.command()
 def remove(repo: str):
-    """
-    Remove an indexed repository.
-    """
+    repo_path = services.registry.get(repo)
 
-    index_dir = INDEX_DIR / repo
-
-    if not index_dir.exists():
-        print(f"[bold red]Repo '{repo}' not found.[/bold red]")
+    if not repo_path:
+        print(f"[bold red]Repository '{repo}' not registered.[/bold red]")
         raise typer.Exit(code=1)
 
     print(f"[bold yellow]Removing repository:[/bold yellow] {repo}")
 
-    # remove FAISS index directory
-    shutil.rmtree(index_dir)
+    services.registry.remove(repo)
 
-    # remove registry entry
-    remove_repo(repo)
+    index_dir = services.registry.index_dir / repo
+    if index_dir.exists():
+        shutil.rmtree(index_dir)
 
     print("[bold green]Repository removed.[/bold green]")
 
+
 @app.command()
 def models():
-    """
-    List available Ollama models.
-    """
-
     try:
-        result = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-
-        lines = result.stdout.splitlines()
+        models = services.llm.list_models()
 
         print("[bold blue]Available Ollama models:[/bold blue]\n")
+        for m in models:
+            print(m)
 
-        for line in lines[1:]:
-            print(line)
-
-    except FileNotFoundError:
-        print("[bold red]Ollama is not installed or not in PATH.[/bold red]")
-
-    except subprocess.CalledProcessError as e:
+    except Exception as exc:
         print("[bold red]Failed to list models.[/bold red]")
-        print(e)
+        print(exc)
+
 
 if __name__ == "__main__":
     app()

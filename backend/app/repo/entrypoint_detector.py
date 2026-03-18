@@ -1,53 +1,36 @@
 from pathlib import Path
 
 
-def detect_entrypoints(repo_path: str, framework: str | None = None):
-    """
-    Detect likely application entrypoints.
-    Uses lightweight structural heuristics only.
-    """
+class EntrypointDetector:
+    def detect(self, repo_path: str, framework: str | None = None):
+        repo = Path(repo_path)
+        entrypoints = []
 
-    repo = Path(repo_path)
-    entrypoints = []
+        def add_if_exists(path: Path):
+            if path.exists():
+                entrypoints.append(str(path.relative_to(repo)))
 
-    if framework == "unity":
+        if framework == "unity":
+            scenes = list((repo / "Assets").rglob("*.unity"))
+            return [str(s.relative_to(repo)) for s in scenes[:3]]
 
-        scenes = list((repo / "Assets").rglob("*.unity"))
+        framework_map = {
+            "nuxt": [
+                repo / "pages/index.vue",
+                repo / "app.vue",
+            ],
+            "fastapi": [
+                repo / "main.py",
+                repo / "app/main.py",
+            ],
+        }
 
-        for scene in scenes[:3]:  # limit results
-            entrypoints.append(str(scene.relative_to(repo)))
+        if framework in framework_map:
+            for candidate in framework_map[framework]:
+                add_if_exists(candidate)
+            return entrypoints
 
-    elif framework == "nuxt":
+        for name in ["main.py", "app.py", "index.js", "main.ts"]:
+            add_if_exists(repo / name)
 
-        for candidate in [
-            repo / "pages/index.vue",
-            repo / "app.vue",
-        ]:
-            if candidate.exists():
-                entrypoints.append(str(candidate.relative_to(repo)))
-
-    elif framework == "fastapi":
-
-        for candidate in [
-            repo / "main.py",
-            repo / "app/main.py",
-        ]:
-            if candidate.exists():
-                entrypoints.append(str(candidate.relative_to(repo)))
-
-    # --- generic fallback ---
-    else:
-
-        common = [
-            "main.py",
-            "app.py",
-            "index.js",
-            "main.ts",
-        ]
-
-        for name in common:
-            candidate = repo / name
-            if candidate.exists():
-                entrypoints.append(name)
-
-    return entrypoints
+        return entrypoints

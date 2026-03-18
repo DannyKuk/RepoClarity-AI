@@ -1,65 +1,72 @@
-from app.repo.scanner import scan_repository
-from app.rag.chunker import chunk_file
-from app.rag.embedder import embed_texts, embedding_dimension
-from app.rag.vector_store import VectorStore
-from app.rag.repo_summary import generate_repo_summary
-from app.repo.framework_detector import detect_framework
-from app.repo.file_prioritizer import get_file_weight
-from app.repo.entrypoint_detector import detect_entrypoints
+class IndexingService:
+    def __init__(
+            self,
+            scanner,
+            chunker,
+            embedder,
+            vector_store_cls,
+            repo_summary,
+            framework_detector,
+            file_prioritizer,
+            entrypoint_detector,
+    ):
+        self.scanner = scanner
+        self.chunker = chunker
+        self.embedder = embedder
+        self.vector_store_cls = vector_store_cls
+        self.repo_summary = repo_summary
+        self.framework_detector = framework_detector
+        self.file_prioritizer = file_prioritizer
+        self.entrypoint_detector = entrypoint_detector
 
+    def build_index(self, repo_path: str):
+        print("Scanning repository...")
+        files = self.scanner(repo_path)
+        print(f"Files found: {len(files)}")
 
-def build_index(repo_path: str) -> VectorStore:
-    """
-    Build a vector index for a repository.
-    """
+        if not files:
+            raise RuntimeError("No files found to index.")
 
-    print("Scanning repository...")
-    files = scan_repository(repo_path)
-    print(f"Files found: {len(files)}")
+        framework = self.framework_detector(repo_path)
+        print(f"Detected framework: {framework}")
 
-    if not files:
-        raise RuntimeError("No files found to index.")
+        entrypoints = self.entrypoint_detector(repo_path, framework)
+        print(f"Detected entrypoints: {entrypoints}")
 
-    framework = detect_framework(repo_path)
-    print(f"Detected framework: {framework}")
+        print("Generating repository summary...")
+        summary = self.repo_summary.summarize(files)
 
-    entrypoints = detect_entrypoints(repo_path, framework)
-    print(f"Detected entrypoints: {entrypoints}")
+        print("Chunking files...")
+        chunks = []
 
-    print("Generating repository summary...")
-    summary = generate_repo_summary(files)
+        for file in files:
+            file_chunks = self.chunker(file)
 
-    print("Chunking files...")
-    chunks = []
+            weight = self.file_prioritizer(file["path"], framework)
 
-    for file in files:
-        file_chunks = chunk_file(file)
+            if file_chunks:
+                chunks.extend(file_chunks * weight)
 
-        weight = get_file_weight(file["path"], framework)
+        print(f"Chunks generated: {len(chunks)}")
 
-        if file_chunks:
-            chunks.extend(file_chunks * weight)
+        if not chunks:
+            raise RuntimeError("No chunks generated. Scanner may be filtering too aggressively.")
 
-    print(f"Chunks generated: {len(chunks)}")
+        chunks = [c for c in chunks if c["content"].strip()]
+        texts = [chunk["content"] for chunk in chunks]
 
-    if not chunks:
-        raise RuntimeError("No chunks generated. Scanner may be filtering too aggressively.")
+        print("Generating embeddings...")
+        embeddings = self.embedder.embed(texts)
 
-    # remove empty text chunks
-    chunks = [c for c in chunks if c["content"].strip()]
+        print("Building vector store...")
+        vector_store = self.vector_store_cls(self.embedder.dimension())
 
-    texts = [chunk["content"] for chunk in chunks]
+        vector_store.framework = framework
+        vector_store.entrypoints = entrypoints
+        vector_store.summary = summary
 
-    print("Generating embeddings...")
-    embeddings = embed_texts(texts)
+        vector_store.add(embeddings, chunks)
 
-    print("Building vector store...")
-    vector_store = VectorStore(embedding_dimension())
-    vector_store.framework = framework
-    vector_store.entrypoints = entrypoints
-    vector_store.summary = summary
-    vector_store.add(embeddings, chunks)
+        print("Index built successfully.")
 
-    print("Index built successfully.")
-
-    return vector_store
+        return vector_store

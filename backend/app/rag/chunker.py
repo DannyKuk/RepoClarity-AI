@@ -1,43 +1,34 @@
-def chunk_text(text: str, chunk_size: int = 800, overlap: int = 200):
-    """
-    Split text into overlapping chunks.
+class Chunker:
+    def __init__(self, chunk_size: int = 800, overlap: int = 200):
+        if overlap >= chunk_size:
+            raise ValueError("overlap must be smaller than chunk_size")
 
-    Args:
-        text: input text
-        chunk_size: max characters per chunk
-        overlap: overlap between chunks
+        self.chunk_size = chunk_size
+        self.overlap = overlap
 
-    Returns:
-        list[str]
-    """
+    def chunk_text(self, text: str):
+        if not text:
+            return []
 
-    chunks = []
+        chunks = []
+        start = 0
+        text_length = len(text)
+        step = self.chunk_size - self.overlap
 
-    start = 0
-    text_length = len(text)
+        while start < text_length:
+            end = start + self.chunk_size
+            chunks.append(text[start:end])
+            start += step
 
-    while start < text_length:
-        end = start + chunk_size
+        return chunks
 
-        chunk = text[start:end]
+    def chunk_file(self, file_dict):
+        chunks = self.chunk_text(file_dict["content"])
 
-        chunks.append(chunk)
-
-        start += chunk_size - overlap
-
-    return chunks
-
-def chunk_file(file_dict):
-    """
-    Convert a scanned file into chunks with metadata.
-    """
-
-    chunks = chunk_text(file_dict["content"])
-
-    return [
-        {
-            "content": chunk,
-            "path": file_dict["path"]
-        }
-        for chunk in chunks
-    ]
+        return [
+            {
+                "content": chunk,
+                "path": file_dict["path"],
+            }
+            for chunk in chunks
+        ]

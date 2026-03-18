@@ -2,56 +2,48 @@ import json
 from pathlib import Path
 
 
-REPOCLARITY_HOME = Path.home() / ".repoclarity"
-INDEX_DIR = REPOCLARITY_HOME / "indexes"
-REGISTRY_FILE = REPOCLARITY_HOME / "repos.json"
+class RepoRegistry:
+    def __init__(self, base_path: Path | None = None):
+        self.base_path = base_path or (Path.home() / ".repoclarity")
+        self.index_dir = self.base_path / "indexes"
+        self.registry_file = self.base_path / "repos.json"
 
+        self._ensure_directories()
 
-def ensure_directories():
-    REPOCLARITY_HOME.mkdir(exist_ok=True)
-    INDEX_DIR.mkdir(exist_ok=True)
+    def _ensure_directories(self):
+        self.base_path.mkdir(exist_ok=True)
+        self.index_dir.mkdir(exist_ok=True)
 
-    if not REGISTRY_FILE.exists():
-        REGISTRY_FILE.write_text("{}")
+        if not self.registry_file.exists():
+            self.registry_file.write_text("{}")
 
+    def _load(self):
+        try:
+            return json.loads(self.registry_file.read_text())
+        except Exception:
+            return {}
 
-def load_registry():
-    ensure_directories()
+    def _save(self, registry):
+        self.registry_file.write_text(json.dumps(registry, indent=2))
 
-    with open(REGISTRY_FILE) as f:
-        return json.load(f)
+    def register(self, name: str, path: str):
+        registry = self._load()
+        registry[name] = path
+        self._save(registry)
 
+    def get(self, name: str):
+        return self._load().get(name)
 
-def save_registry(registry):
-    with open(REGISTRY_FILE, "w") as f:
-        json.dump(registry, f, indent=2)
+    def list(self):
+        return self._load()
 
+    def remove(self, name: str) -> bool:
+        registry = self._load()
 
-def register_repo(name, path):
-    registry = load_registry()
+        if name not in registry:
+            return False
 
-    registry[name] = path
+        del registry[name]
+        self._save(registry)
 
-    save_registry(registry)
-
-
-def get_repo(name):
-    registry = load_registry()
-
-    return registry.get(name)
-
-
-def list_repos():
-    return load_registry()
-
-
-def remove_repo(name: str):
-    registry = load_registry()
-
-    if name not in registry:
-        return False
-    del registry[name]
-
-    save_registry(registry)
-
-    return True
+        return True

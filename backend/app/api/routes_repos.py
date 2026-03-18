@@ -1,16 +1,8 @@
 from pathlib import Path
+import shutil
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-
-from app.rag.indexing_service import build_index
-from app.repo.repo_registry import (
-    register_repo,
-    list_repos,
-    get_repo,
-    remove_repo,
-    INDEX_DIR,
-)
 
 router = APIRouter()
 
@@ -27,27 +19,30 @@ class RepoResponse(BaseModel):
 
 
 @router.get("/", response_model=list[RepoResponse])
-def get_repos():
-    repos = list_repos()
+def get_repos(request: Request):
+    services = request.app.state.services
 
+    repos = services.registry.list()
     result = []
 
     for name, path in repos.items():
-        framework_file = INDEX_DIR / name / "framework.txt"
+        index_dir = services.registry.index_dir / name
 
         framework = None
-        if framework_file.exists():
+
+        if index_dir.exists():
             try:
-                content = framework_file.read_text().strip()
-                framework = content or None
+                vector_store = services.vector_store_cls.load(index_dir)
+                framework = vector_store.framework
             except Exception:
+                # don't break listing if one index is corrupted
                 pass
 
         result.append(
             RepoResponse(
                 name=name,
                 path=path,
-                framework=framework
+                framework=framework,
             )
         )
 
@@ -55,91 +50,69 @@ def get_repos():
 
 
 @router.post("/index")
-def index_repo(request: IndexRepoRequest):
-    """
-    Index a repository and register it.
-    """
+def index_repo(body: IndexRepoRequest, request: Request):
+    services = request.app.state.services
 
-    repo_path = Path(request.path)
+    repo_path = Path(body.path)
 
     if not repo_path.exists():
-        raise HTTPException(
-            status_code=400,
-            detail="Repository path does not exist"
-        )
+        raise HTTPException(400, "Repository path does not exist")
 
     if not repo_path.is_dir():
-        raise HTTPException(
-            status_code=400,
-            detail="Provided path is not a directory"
-        )
+        raise HTTPException(400, "Provided path is not a directory")
 
     try:
-        vector_store = build_index(request.path)
+        vector_store = services.indexing_service.build_index(body.path)
 
-        repo_index_dir = INDEX_DIR / request.name
+        repo_index_dir = services.registry.index_dir / body.name
         vector_store.save(repo_index_dir)
 
-        register_repo(request.name, request.path)
+        services.registry.register(body.name, body.path)
 
-        return {"status": "indexed", "repo": request.name}
+        return {"status": "indexed", "repo": body.name}
 
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to index repository: {exc}"
-        )
+        raise HTTPException(500, f"Failed to index repository: {exc}")
 
 
 @router.post("/{repo}/reindex")
-def reindex_repo(repo: str):
-    """
-    Rebuild the index for an existing repository.
-    """
+def reindex_repo(repo: str, request: Request):
+    services = request.app.state.services
 
-    repo_path = get_repo(repo)
+    repo_path = services.registry.get(repo)
 
     if not repo_path:
-        raise HTTPException(status_code=404, detail="Repository not registered.")
+        raise HTTPException(404, "Repository not registered.")
 
     try:
-        vector_store = build_index(repo_path)
+        vector_store = services.indexing_service.build_index(repo_path)
 
-        repo_index_dir = INDEX_DIR / repo
+        repo_index_dir = services.registry.index_dir / repo
         vector_store.save(repo_index_dir)
 
         return {"status": "reindexed", "repo": repo}
 
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to reindex repository: {exc}"
-        )
+        raise HTTPException(500, f"Failed to reindex repository: {exc}")
 
 
 @router.delete("/{repo}")
-def delete_repo(repo: str):
-    """
-    Remove an indexed repository.
-    """
+def delete_repo(repo: str, request: Request):
+    services = request.app.state.services
 
-    repo_path = get_repo(repo)
+    repo_path = services.registry.get(repo)
 
     if not repo_path:
-        raise HTTPException(status_code=404, detail="Repository not registered.")
+        raise HTTPException(404, "Repository not registered.")
 
     try:
-        remove_repo(repo)
+        services.registry.remove(repo)
 
-        index_dir = INDEX_DIR / repo
+        index_dir = services.registry.index_dir / repo
         if index_dir.exists():
-            import shutil
             shutil.rmtree(index_dir)
 
         return {"status": "removed", "repo": repo}
 
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to remove repository: {exc}"
-        )
+        raise HTTPException(500, f"Failed to remove repository: {exc}")

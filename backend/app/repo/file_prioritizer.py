@@ -1,42 +1,39 @@
-def get_file_weight(path: str, framework: str | None = None) -> int:
-    """
-    Determine how important a file is for indexing.
-    Higher weight means higher retrieval probability.
-    """
+from pathlib import Path
 
-    path = path.lower()
+
+def get_file_weight(path: str, framework: str | None = None) -> int:
+    path_lower = path.lower()
+    parts = Path(path_lower).parts
 
     weight = 1
 
-    # universal priorities
-    if "readme" in path:
+    if "readme" in path_lower:
         return 4
 
-    if path.endswith("package.json"):
+    if path_lower.endswith("package.json"):
         return 3
 
-    if "config" in path:
+    if "config" in path_lower:
         weight = max(weight, 2)
 
-    # framework-specific rules
-    if framework == "unity":
-        if "/scripts/" in path:
-            weight = 4
-        elif "/ui/" in path:
-            weight = max(weight, 3)
+    framework_rules = {
+        "unity": [
+            (lambda p, parts: "scripts" in parts, 4),
+            (lambda p, parts: "ui" in parts, 3),
+        ],
+        "nuxt": [
+            (lambda p, parts: "pages" in parts, 4),
+            (lambda p, parts: "components" in parts, 3),
+            (lambda p, parts: "layouts" in parts, 3),
+        ],
+        "fastapi": [
+            (lambda p, parts: "routers" in parts, 3),
+            (lambda p, parts: p.endswith("main.py"), 4),
+        ],
+    }
 
-    elif framework == "nuxt":
-        if "/pages/" in path:
-            weight = 4
-        elif "/components/" in path:
-            weight = 3
-        elif "/layouts/" in path:
-            weight = max(weight, 3)
-
-    elif framework == "fastapi":
-        if "/routers/" in path:
-            weight = 3
-        elif path.endswith("main.py"):
-            weight = 4
+    for condition, value in framework_rules.get(framework, []):
+        if condition(path_lower, parts):
+            weight = max(weight, value)
 
     return weight
