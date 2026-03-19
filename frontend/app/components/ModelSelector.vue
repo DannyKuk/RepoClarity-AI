@@ -7,12 +7,16 @@
         variant="soft"
         icon="i-lucide-refresh-cw"
         :loading="loading"
+        :disabled="loading"
         @click="modelsStore.reloadModels()"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useModelsStore } from '@/stores/models'
+import { storeToRefs } from 'pinia'
+
 const model = defineModel<string>()
 
 const modelsStore = useModelsStore()

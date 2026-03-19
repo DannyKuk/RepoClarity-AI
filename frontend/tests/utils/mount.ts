@@ -39,7 +39,34 @@ export function mountWithStubs(component: any, options: any = {}) {
                           @input="$emit('update:modelValue', $event.target.value)"
                         />
                     `
-                }
+                },
+
+                USelect: {
+                    props: ['modelValue', 'items'],
+                    template: `
+                        <select
+                          :value="modelValue"
+                          @change="$emit('update:modelValue', $event.target.value)"
+                        >
+                          <option v-for="item in items" :key="item" :value="item">
+                            {{ item }}
+                          </option>
+                        </select>
+                    `
+                },
+
+                NuxtLink: {
+                    props: ['to'],
+                    template: `<a :href="to"><slot /></a>`
+                },
+
+                UBadge: {
+                    template: `<span data-test="badge"><slot /></span>`
+                },
+
+                USeparator: {
+                    template: `<div data-test="separator" />`
+                },
             }
         }
     })
