@@ -2,6 +2,7 @@
   <UModal title="Add Repository" v-model:open="open">
     <template #default>
       <UButton
+          data-test="open-button"
           icon="i-lucide-plus"
           size="sm"
           @click="open = true"
@@ -10,12 +11,21 @@
 
     <template #body>
       <div class="flex flex-col gap-2 mb-5">
-        <UInput placeholder="Source Path" v-model="repoSourcePath" />
-        <UInput placeholder="Name" v-model="repoName" />
+        <UInput
+            data-test="input-path"
+            placeholder="Source Path"
+            v-model="repoSourcePath"
+        />
+        <UInput
+            data-test="input-name"
+            placeholder="Name"
+            v-model="repoName"
+        />
       </div>
 
       <div class="flex justify-end gap-2">
         <UButton
+            data-test="cancel-button"
             label="Cancel"
             variant="outline"
             color="error"
@@ -24,6 +34,7 @@
         />
 
         <UButton
+            data-test="add-button"
             label="Add"
             variant="outline"
             :loading="loading"
