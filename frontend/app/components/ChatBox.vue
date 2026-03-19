@@ -65,9 +65,9 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import ChatMessage from '~/components/ChatMessage.vue'
-import { askRepo } from '~/composables/api'
-import { buildBlocks } from '~/utils/chatParser'
+import ChatMessage from '@/components/ChatMessage.vue'
+import { askRepo } from '@/composables/api'
+import { buildBlocks } from '@/utils/chatParser'
 
 type ChatMessageType = {
   id: number

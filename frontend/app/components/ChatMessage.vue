@@ -18,6 +18,10 @@
       <!-- Assistant -->
       <div v-else>
 
+        <div v-if="!message.blocks" data-test="message-text">
+          {{ message.text }}
+        </div>
+
         <template v-for="(block, i) in message.blocks" :key="i">
 
           <div

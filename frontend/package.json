@@ -26,6 +26,7 @@
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/test-utils": "^2.4.6",
+    "flush-promises": "^1.0.2",
     "jsdom": "^29.0.0",
     "vitest": "^4.1.0"
   }
