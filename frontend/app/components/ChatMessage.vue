@@ -39,12 +39,12 @@
 
         </template>
 
-        <div v-if="message.framework" data-test="framework">
-          {{ message.framework }}
+        <div v-if="message.framework" data-test="framework" class="border-t-2 border-b-2 border-neutral-700 mt-2 pt-4 pb-4">
+          <UBadge color="secondary" variant="outline">{{ message.framework }}</UBadge>
         </div>
 
-        <div v-if="message.sources?.length" data-test="sources">
-          <div v-for="s in message.sources" :key="s">{{ s }}</div>
+        <div v-if="message.sources?.length" data-test="sources" class="mt-2">
+          <div v-for="s in message.sources" :key="s"><UBadge variant="outline">{{ s }}</UBadge></div>
         </div>
 
       </div>

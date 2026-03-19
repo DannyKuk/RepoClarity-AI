@@ -85,6 +85,7 @@ async function handleReindex(repo: Repo) {
 async function handleDelete(repo: Repo) {
   const success = await deleteRepo(repo.name)
   if (success) settingsOpen.value = false
+  await navigateTo('/')
 }
 
 watch(modalOpen, (v) => {

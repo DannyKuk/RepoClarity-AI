@@ -1,11 +1,11 @@
 <template>
-  <div class="flex h-full flex-col gap-4">
+  <div class="flex h-full min-h-[75vh] flex-col gap-4">
 
     <!-- Messages -->
     <div
         ref="messagesContainer"
         data-test="messages-container"
-        class="flex-1 space-y-4 overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950/50 p-4"
+        class="flex-1 min-h-[75vh] max-h-[75vh] space-y-4 overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950/50 p-4"
     >
       <!-- Empty state -->
       <div
@@ -50,14 +50,7 @@
           @keydown.enter.exact.prevent="send"
           @keydown.enter.shift.exact.stop
       />
-
-      <button
-          data-test="send-button"
-          type="submit"
-          :disabled="loading || !trimmedInput"
-      >
-        Send
-      </button>
+      <UButton :disabled="loading || !trimmedInput" type="submit" data-test="send-button">Send</UButton>
     </form>
 
   </div>
