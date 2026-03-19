@@ -8,6 +8,15 @@ Everything runs **fully local** - no cloud, no data leaks.
 
 ---
 
+<p align="center">
+  <strong>Watch the Demo on YouTube</strong><br><br>
+  <a href="https://www.youtube.com/watch?v=lZbKBxYY6Jo">
+    <img src="https://img.youtube.com/vi/lZbKBxYY6Jo/0.jpg" width="300">
+  </a>
+</p>
+
+---
+
 ## 🚀 What it does
 
 - Analyze any codebase
