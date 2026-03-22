@@ -61,16 +61,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import ChatMessage from '@/components/ChatMessage.vue'
 import { askRepo } from '@/composables/api'
 import { buildBlocks } from '@/utils/chatParser'
-
-type ChatMessageType = {
-  id: number
-  role: 'user' | 'assistant'
-  text: string
-  blocks?: any[]
-  sources?: string[]
-  framework?: string | null
-  entrypoints?: string[]
-}
+import type {ChatMessageType} from "~/types/api";
 
 const props = defineProps<{ repo: string; model?: string }>()
 
@@ -113,6 +104,7 @@ async function send() {
       text: res.answer,
       blocks,
       sources: res.sources ?? [],
+      languages: res.languages ?? [],
       framework: res.framework ?? null,
       entrypoints: res.entrypoints ?? []
     })

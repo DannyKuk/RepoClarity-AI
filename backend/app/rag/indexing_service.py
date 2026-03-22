@@ -6,6 +6,7 @@ class IndexingService:
             embedder,
             vector_store_cls,
             repo_summary,
+            language_detector,
             framework_detector,
             file_prioritizer,
             entrypoint_detector,
@@ -15,6 +16,7 @@ class IndexingService:
         self.embedder = embedder
         self.vector_store_cls = vector_store_cls
         self.repo_summary = repo_summary
+        self.language_detector = language_detector
         self.framework_detector = framework_detector
         self.file_prioritizer = file_prioritizer
         self.entrypoint_detector = entrypoint_detector
@@ -26,6 +28,9 @@ class IndexingService:
 
         if not files:
             raise RuntimeError("No files found to index.")
+
+        languages = self.language_detector(repo_path)
+        print(f"Detected language(s): {languages}")
 
         framework = self.framework_detector(repo_path)
         print(f"Detected framework: {framework}")
@@ -61,6 +66,7 @@ class IndexingService:
         print("Building vector store...")
         vector_store = self.vector_store_cls(self.embedder.dimension())
 
+        vector_store.languages = languages
         vector_store.framework = framework
         vector_store.entrypoints = entrypoints
         vector_store.summary = summary

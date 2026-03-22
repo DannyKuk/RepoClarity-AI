@@ -7,19 +7,20 @@ class QueryEngine:
         # Retrieve relevant chunks
         chunks = self.retriever.retrieve(question, vector_store, k=20)
 
+        languages = vector_store.languages or ["unknown"]
         framework = vector_store.framework or "unknown"
-        entrypoints = vector_store.entrypoints
+        entrypoints = vector_store.entrypoints or []
         summary = vector_store.summary or ""
 
         context = self._build_context(chunks)
 
         if self._is_overview_question(question):
             prompt = self._build_overview_prompt(
-                question, framework, entrypoints, summary, context
+                question, languages, framework, entrypoints, summary, context
             )
         else:
             prompt = self._build_detailed_prompt(
-                question, framework, entrypoints, summary, context
+                question, languages, framework, entrypoints, summary, context
             )
 
         answer = self.llm.generate(prompt, model=model)
@@ -29,19 +30,31 @@ class QueryEngine:
         return answer, sources
 
     def _build_context(self, chunks):
-        return "\n\n".join(
-            f"File: {chunk['path']}\n{chunk['content'][:800]}"
-            for chunk in chunks
-        )
+        parts = []
 
-    def _build_overview_prompt(self, question, framework, entrypoints, summary, context):
+        for chunk in chunks:
+            score = chunk.get("_score")
+            score_str = f"[Score: {round(score, 4)}]\n" if score is not None else ""
+
+            parts.append(
+                f"{score_str}File: {chunk['path']}\n{chunk['content'][:800]}"
+            )
+
+        return "\n\n".join(parts)
+
+    def _build_overview_prompt(
+        self, question, languages, framework, entrypoints, summary, context
+    ):
         return f"""
             You are analyzing a software repository.
             
-            Detected framework:
+            Languages used:
+            {", ".join(languages)}
+            
+            Framework:
             {framework}
             
-            Entrypoints:
+            Entrypoints (important for understanding execution flow):
             {entrypoints}
             
             Repository summary:
@@ -50,39 +63,50 @@ class QueryEngine:
             Relevant repository context:
             {context}
             
-            The user asked a high-level question about the project.
+            The user asked a high-level question.
             
-            Explain the purpose of the project, what the application does,
-            and how it works at a high level.
+            Explain:
+            - what the project does
+            - its purpose
+            - how the system is structured
+            - how execution likely starts (use entrypoints)
+            
+            Question:
+            {question}
+            
+            Answer clearly and concisely.
+            """
+
+    def _build_detailed_prompt(
+        self, question, languages, framework, entrypoints, summary, context
+    ):
+        framework_part = (
+            f" using {framework}" if framework != "unknown" else ""
+        )
+
+        return f"""
+            You are analyzing a {", ".join(languages)} codebase{framework_part}.
+            
+            Entrypoints (important for execution flow):
+            {entrypoints}
+            
+            Repository summary:
+            {summary}
+            
+            Relevant code context:
+            {context}
+            
+            Use the provided information to answer the question.
+            
+            Prefer:
+            - referencing actual files and structure
+            - explaining behavior based on code
+            - being precise and grounded in the context
             
             Question:
             {question}
             
             Answer clearly.
-            """
-
-    def _build_detailed_prompt(self, question, framework, entrypoints, summary, context):
-        return f"""
-            You are analyzing a software repository.
-            
-            Detected framework:
-            {framework}
-            
-            Entrypoints:
-            {entrypoints}
-            
-            Repository summary:
-            {summary}
-            
-            Relevant repository context:
-            {context}
-            
-            Use the provided information to answer the question.
-            
-            Question:
-            {question}
-            
-            Answer clearly and reference the code structure when helpful.
             """
 
     def _is_overview_question(self, question: str) -> bool:

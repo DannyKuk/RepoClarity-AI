@@ -16,7 +16,14 @@
       </div>
 
       <!-- Assistant -->
-      <div v-else>
+      <div v-else class="mt-2 border-t-2 border-neutral-700">
+
+        <div v-if="message.languages?.length" data-test="sources" class="flex flex-row mt-3 gap-1">
+          <div v-for="l in message.languages" :key="l"><UBadge variant="outline" color="secondary">{{ l }}</UBadge></div>
+        </div>
+        <div v-if="message.framework" data-test="framework" class="mb-2 mt-1">
+          <UBadge color="neutral" variant="outline">{{ message.framework }}</UBadge>
+        </div>
 
         <div v-if="!message.blocks" data-test="message-text">
           {{ message.text }}
@@ -39,11 +46,7 @@
 
         </template>
 
-        <div v-if="message.framework" data-test="framework" class="border-t-2 border-b-2 border-neutral-700 mt-2 pt-4 pb-4">
-          <UBadge color="secondary" variant="outline">{{ message.framework }}</UBadge>
-        </div>
-
-        <div v-if="message.sources?.length" data-test="sources" class="mt-2">
+        <div v-if="message.sources?.length" data-test="sources" class="mt-2 pt-2 border-t-2 border-neutral-600">
           <div v-for="s in message.sources" :key="s"><UBadge variant="outline">{{ s }}</UBadge></div>
         </div>
 
@@ -54,8 +57,9 @@
 
 <script setup lang="ts">
 import CodeBlock from '@/components/CodeBlock.vue'
+import type { ChatMessageType } from "~/types/api";
 
 defineProps<{
-  message: any
+  message: ChatMessageType
 }>()
 </script>

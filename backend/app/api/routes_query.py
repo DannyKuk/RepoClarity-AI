@@ -14,6 +14,7 @@ class AskRequest(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     sources: list[str]
+    languages: list[str] = []
     framework: str | None = None
     entrypoints: list[str] = []
 
@@ -42,6 +43,7 @@ def ask(body: AskRequest, request: Request):
         return AskResponse(
             answer=answer,
             sources=sources,
+            languages=vector_store.languages,
             framework=vector_store.framework,
             entrypoints=vector_store.entrypoints,
         )

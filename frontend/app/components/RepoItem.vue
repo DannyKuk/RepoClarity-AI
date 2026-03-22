@@ -9,12 +9,12 @@
           <span>{{ repo.name }}</span>
 
           <UBadge
-              v-if="repo.framework"
+              v-if="repo.languages"
               size="sm"
               color="secondary"
               variant="outline"
           >
-            {{ repo.framework }}
+            {{ repo.languages[0] }}
           </UBadge>
         </div>
       </NuxtLink>

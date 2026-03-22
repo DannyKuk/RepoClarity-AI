@@ -5,6 +5,7 @@ from app.rag.query_engine import QueryEngine
 from app.rag.indexing_service import IndexingService
 from app.rag.repo_summary import RepoSummarizer
 from app.rag.vector_store import VectorStore
+from app.repo.language_detector import LanguageDetector
 
 from app.repo.scanner import RepositoryScanner
 from app.repo.framework_detector import detect_framework
@@ -23,6 +24,7 @@ class Services:
         self.scanner = RepositoryScanner()
         self.registry = RepoRegistry()
         self.entrypoint_detector = EntrypointDetector()
+        self.langauges_detector = LanguageDetector()
 
         # --- llm ---
         self.llm = OllamaClient()
@@ -40,6 +42,7 @@ class Services:
             embedder=self.embedder,
             vector_store_cls=self.vector_store_cls,
             repo_summary=self.repo_summarizer,
+            language_detector=LanguageDetector().detect,
             framework_detector=detect_framework,
             file_prioritizer=get_file_weight,
             entrypoint_detector=self.entrypoint_detector.detect

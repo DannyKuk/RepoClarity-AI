@@ -38,7 +38,7 @@ class RepoSummarizer:
             Using the following key files, summarize:
             
             1. What the project is
-            2. What framework or technology it uses
+            2. What framework, language or technology it uses
             3. What the user sees when starting the project
             4. The main purpose of the project
             

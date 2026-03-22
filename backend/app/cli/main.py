@@ -69,6 +69,15 @@ def ask(
     # --- interactive ---
     print(f"[bold blue]RepoClarity chat[/bold blue] ([bold]{repo}[/bold])")
     print(f"[bold blue]Model:[/bold blue] {model_name}")
+    langs = vector_store.languages or ["unknown"]
+
+    if len(langs) > 1:
+        lang_str = f"{langs[0]} (primary), " + ", ".join(langs[1:])
+    else:
+        lang_str = langs[0]
+
+    print(f"[bold blue]Languages:[/bold blue] {lang_str}")
+    print(f"[bold blue]Framework:[/bold blue] {vector_store.framework or 'none'}")
     print("Type 'exit' to quit.\n")
 
     while True:

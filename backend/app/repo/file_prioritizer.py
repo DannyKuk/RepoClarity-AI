@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def get_file_weight(path: str, framework: str | None = None) -> int:
+def get_file_weight(path: str, framework: str | None = None, languages: list[str] | None = None) -> int:
     path_lower = path.lower()
     parts = Path(path_lower).parts
 
@@ -35,5 +35,27 @@ def get_file_weight(path: str, framework: str | None = None) -> int:
     for condition, value in framework_rules.get(framework, []):
         if condition(path_lower, parts):
             weight = max(weight, value)
+
+    # --- Language fallback rules ---
+    if not framework:
+        if "python" in languages:
+            if path_lower.endswith("main.py"):
+                weight = max(weight, 4)
+            if "app" in path_lower:
+                weight = max(weight, 3)
+
+        if "javascript" in languages or "typescript" in languages:
+            if any(x in parts for x in ["src", "lib"]):
+                weight = max(weight, 2)
+            if path_lower.endswith(("index.js", "index.ts")):
+                weight = max(weight, 3)
+
+        if "go" in languages:
+            if path_lower.endswith("main.go"):
+                weight = max(weight, 4)
+
+        if "rust" in languages:
+            if path_lower.endswith("main.rs"):
+                weight = max(weight, 4)
 
     return weight

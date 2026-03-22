@@ -15,6 +15,7 @@ class IndexRepoRequest(BaseModel):
 class RepoResponse(BaseModel):
     name: str
     path: str
+    languages: list[str]
     framework: str | None = None
 
 
@@ -28,21 +29,20 @@ def get_repos(request: Request):
     for name, path in repos.items():
         index_dir = services.registry.index_dir / name
 
-        framework = None
+        languages = []
 
         if index_dir.exists():
             try:
                 vector_store = services.vector_store_cls.load(index_dir)
-                framework = vector_store.framework
-            except Exception:
-                # don't break listing if one index is corrupted
-                pass
+                languages = vector_store.languages
+            except Exception as e:
+                print(f"[WARN] Failed to load index for {name}: {e}")
 
         result.append(
             RepoResponse(
                 name=name,
                 path=path,
-                framework=framework,
+                languages=languages,
             )
         )
 
@@ -65,6 +65,10 @@ def index_repo(body: IndexRepoRequest, request: Request):
         vector_store = services.indexing_service.build_index(body.path)
 
         repo_index_dir = services.registry.index_dir / body.name
+
+        if repo_index_dir.exists():
+            shutil.rmtree(repo_index_dir)
+
         vector_store.save(repo_index_dir)
 
         services.registry.register(body.name, body.path)
@@ -88,6 +92,10 @@ def reindex_repo(repo: str, request: Request):
         vector_store = services.indexing_service.build_index(repo_path)
 
         repo_index_dir = services.registry.index_dir / repo
+
+        if repo_index_dir.exists():
+            shutil.rmtree(repo_index_dir)
+
         vector_store.save(repo_index_dir)
 
         return {"status": "reindexed", "repo": repo}
