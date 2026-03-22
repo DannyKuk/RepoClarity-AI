@@ -6,7 +6,7 @@ describe('RepoItem', () => {
     function createRepo(overrides = {}) {
         return {
             name: 'my-repo',
-            framework: 'Vue',
+            languages: ['python'],
             ...overrides
         }
     }
@@ -23,16 +23,16 @@ describe('RepoItem', () => {
         expect(wrapper.text()).toContain('my-repo')
     })
 
-    it('renders framework badge when present', () => {
-        const wrapper = createWrapper(createRepo({ framework: 'Vue' }))
+    it('renders languages badge when present', () => {
+        const wrapper = createWrapper(createRepo({ languages: ['python'] }))
 
         const badge = wrapper.find('[data-test="badge"]')
         expect(badge.exists()).toBe(true)
-        expect(badge.text()).toBe('Vue')
+        expect(badge.text()).toBe('python')
     })
 
-    it('does not render badge when framework is missing', () => {
-        const wrapper = createWrapper(createRepo({ framework: null }))
+    it('does not render badge when langauges are missing', () => {
+        const wrapper = createWrapper(createRepo({ languages: [] }))
 
         expect(wrapper.find('[data-test="badge"]').exists()).toBe(false)
     })

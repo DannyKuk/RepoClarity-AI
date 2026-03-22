@@ -24,5 +24,5 @@ export interface ModelsResponse {
 export interface Repo {
     name: string
     path: string
-    languages: string | null
+    languages: string[] | null
 }

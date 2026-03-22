@@ -9,7 +9,7 @@
           <span>{{ repo.name }}</span>
 
           <UBadge
-              v-if="repo.languages"
+              v-if="repo.languages?.length"
               size="sm"
               color="secondary"
               variant="outline"
