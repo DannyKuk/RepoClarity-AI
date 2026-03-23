@@ -1,11 +1,16 @@
 from pathlib import Path
 
 
-def get_file_weight(path: str, framework: str | None = None, languages: list[str] | None = None) -> int:
+def get_file_weight(
+        path: str,
+        framework: str | None = None,
+        languages: list[str] | None = None,
+) -> int:
     path_lower = path.lower()
     parts = Path(path_lower).parts
 
     weight = 1
+    languages = languages or []
 
     if "readme" in path_lower:
         return 4

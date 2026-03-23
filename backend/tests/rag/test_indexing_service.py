@@ -34,6 +34,7 @@ def test_build_index_happy_path():
     embedder = FakeEmbedder()
     vector_store_cls = FakeVectorStore
     repo_summary = FakeSummary()
+    language_detector = lambda _: ["python"]
     framework_detector = lambda path: "python"
     file_prioritizer = lambda path, fw: 2
     entrypoint_detector = lambda path, fw: ["main.py"]
@@ -44,6 +45,7 @@ def test_build_index_happy_path():
         embedder,
         vector_store_cls,
         repo_summary,
+        language_detector,
         framework_detector,
         file_prioritizer,
         entrypoint_detector,
@@ -68,6 +70,7 @@ def test_no_files_raises():
         embedder=FakeEmbedder(),
         vector_store_cls=FakeVectorStore,
         repo_summary=FakeSummary(),
+        language_detector=lambda _: ["python"],
         framework_detector=lambda _: "x",
         file_prioritizer=lambda p, f: 1,
         entrypoint_detector=lambda p, f: [],
@@ -87,6 +90,7 @@ def test_no_chunks_raises():
         embedder=FakeEmbedder(),
         vector_store_cls=FakeVectorStore,
         repo_summary=FakeSummary(),
+        language_detector=lambda _: ["python"],
         framework_detector=lambda _: "x",
         file_prioritizer=lambda p, f: 1,
         entrypoint_detector=lambda p, f: [],
@@ -114,6 +118,7 @@ def test_empty_chunks_filtered_before_embedding():
         embedder,
         vector_store_cls,
         repo_summary=FakeSummary(),
+        language_detector=lambda _: ["python"],
         framework_detector=lambda _: "x",
         file_prioritizer=lambda p, f: 1,
         entrypoint_detector=lambda p, f: [],
@@ -136,6 +141,7 @@ def test_weight_zero_drops_chunks():
         embedder=FakeEmbedder(),
         vector_store_cls=FakeVectorStore,
         repo_summary=FakeSummary(),
+        language_detector=lambda _: ["python"],
         framework_detector=lambda _: "x",
         file_prioritizer=lambda p, f: 0,  # critical case
         entrypoint_detector=lambda p, f: [],

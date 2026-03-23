@@ -7,7 +7,7 @@ from app.main import app
 
 class FakeVectorStore:
     def __init__(self):
-        self.framework = "python"
+        self.languages = ["python"]
         self.entrypoints = ["main.py"]
 
 
@@ -77,7 +77,7 @@ def test_ask_success(tmp_path):
 
     assert data["answer"] == "answer"
     assert data["sources"] == ["file1.py", "file2.py"]
-    assert data["framework"] == "python"
+    assert data["languages"] == ["python"]
     assert data["entrypoints"] == ["main.py"]
 
 

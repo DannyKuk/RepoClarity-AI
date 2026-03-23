@@ -7,10 +7,10 @@ class QueryEngine:
         # Retrieve relevant chunks
         chunks = self.retriever.retrieve(question, vector_store, k=20)
 
-        languages = vector_store.languages or ["unknown"]
-        framework = vector_store.framework or "unknown"
-        entrypoints = vector_store.entrypoints or []
-        summary = vector_store.summary or ""
+        languages = getattr(vector_store, "languages", None) or ["unknown"]
+        framework = getattr(vector_store, "framework", None) or "unknown"
+        entrypoints = getattr(vector_store, "entrypoints", None) or []
+        summary = getattr(vector_store, "summary", None) or ""
 
         context = self._build_context(chunks)
 

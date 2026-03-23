@@ -5,7 +5,7 @@ from app.main import app
 
 class FakeVectorStore:
     def __init__(self):
-        self.framework = "python"
+        self.languages = ["python"]
 
     def save(self, path):
         path.mkdir(parents=True, exist_ok=True)
@@ -60,11 +60,11 @@ def test_get_repos_empty(tmp_path):
     assert response.json() == []
 
 
-def test_get_repos_with_framework(tmp_path):
+def test_get_repos_with_languages(tmp_path):
     services = FakeServices(tmp_path)
     services.registry.register("repo1", "/path")
 
-    # create index dir so framework is loaded
+    # create index dir so languages is loaded
     index_dir = tmp_path / "repo1"
     index_dir.mkdir()
 
@@ -76,7 +76,7 @@ def test_get_repos_with_framework(tmp_path):
     data = response.json()
 
     assert data[0]["name"] == "repo1"
-    assert data[0]["framework"] == "python"
+    assert data[0]["languages"] == ["python"]
 
 
 def test_index_repo_success(tmp_path):

@@ -16,6 +16,7 @@ class EntrypointDetector:
             if path.exists():
                 entrypoints.append(str(path.relative_to(repo)))
 
+        # --- Framework-specific ---
         if framework == "unity":
             scenes = list((repo / "Assets").rglob("*.unity"))
             return [str(s.relative_to(repo)) for s in scenes[:3]]
@@ -52,6 +53,11 @@ class EntrypointDetector:
         if "rust" in languages:
             candidates += ["main.rs"]
 
+        # --- Generic fallback (if no language info) ---
+        if not candidates:
+            candidates = ["main.py", "app.py", "index.js", "index.ts"]
+
+        # --- Search common locations ---
         search_roots = [
             repo,
             repo / "src",

@@ -43,9 +43,9 @@ def ask(body: AskRequest, request: Request):
         return AskResponse(
             answer=answer,
             sources=sources,
-            languages=vector_store.languages,
-            framework=vector_store.framework,
-            entrypoints=vector_store.entrypoints,
+            languages=getattr(vector_store, "languages", []),
+            framework=getattr(vector_store, "framework", None),
+            entrypoints=getattr(vector_store, "entrypoints", []),
         )
 
     except Exception as exc:
