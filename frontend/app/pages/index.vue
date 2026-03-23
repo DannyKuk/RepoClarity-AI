@@ -1,6 +1,6 @@
 <template>
-  <div class="text-center mt-20">
-    <h1 class="text-4xl font-bold mb-6">RepoClarity AI</h1>
+  <div class="flex flex-col justify-center items-center h-full">
+    <img src="/logo.png" alt="RepoClarity AI" class="w-72"/>
 
     <p class="text-neutral-400">
       Select a repository from the sidebar to start chatting.
