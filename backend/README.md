@@ -15,6 +15,7 @@ Everything runs **locally**.
 * Repository indexing with semantic embeddings
 * FAISS vector search
 * Local LLM support via Ollama
+* Language detection (Python, Typescript, etc.)
 * Framework detection (Unity, Nuxt, FastAPI, etc.)
 * Entrypoint detection
 * Repository summaries

@@ -10,7 +10,7 @@ from app.api.routes_models import router as models_router
 app = FastAPI(
     title="RepoClarity AI API",
     description="Local AI assistant for exploring repositories.",
-    version="1.0.0",
+    version="1.0.1",
 )
 
 services = Services()
