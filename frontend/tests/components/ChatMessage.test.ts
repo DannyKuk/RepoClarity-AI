@@ -64,15 +64,21 @@ describe('ChatMessage', () => {
                     role: 'assistant',
                     text: '',
                     blocks: [],
-                    sources: ['file1.ts', 'file2.ts']
+                    sources: [
+                        { path: 'file1.ts', start: 0, end: 10 },
+                        { path: 'file2.ts', start: 0, end: 20 }
+                    ]
                 }
             }
         })
 
-        const sources = wrapper.find('[data-test="sources"]')
-        expect(sources.exists()).toBe(true)
-        expect(sources.text()).toContain('file1.ts')
-        expect(sources.text()).toContain('file2.ts')
+        const sources = wrapper.findAll('[data-test="sources"]')
+        expect(sources.length).toBeGreaterThan(0)
+
+        const text = wrapper.text()
+
+        expect(text).toContain('file1.ts')
+        expect(text).toContain('file2.ts')
     })
 
 })

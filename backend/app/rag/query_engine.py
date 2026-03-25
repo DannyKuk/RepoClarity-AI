@@ -25,9 +25,31 @@ class QueryEngine:
 
         answer = self.llm.generate(prompt, model=model)
 
-        sources = sorted({chunk["path"] for chunk in chunks})
+        sources = []
 
-        return answer, sources
+        for chunk in chunks:
+            meta = chunk.get("metadata", {})
+            path = meta.get("path", "unknown")
+            start = meta.get("start")
+            end = meta.get("end")
+
+            sources.append({
+                "path": path,
+                "start": start,
+                "end": end
+            })
+
+        # deduplicate by (path, start)
+        seen = set()
+        unique_sources = []
+
+        for s in sources:
+            key = (s["path"], s["start"])
+            if key not in seen:
+                unique_sources.append(s)
+                seen.add(key)
+
+        return answer, unique_sources
 
     def _build_context(self, chunks):
         parts = []
@@ -36,8 +58,17 @@ class QueryEngine:
             score = chunk.get("_score")
             score_str = f"[Score: {round(score, 4)}]\n" if score is not None else ""
 
+            meta = chunk.get("metadata", {})
+            path = meta.get("path", "unknown")
+            start = meta.get("start")
+            end = meta.get("end")
+
+            location = f"{path}"
+            if start is not None and end is not None:
+                location += f" (lines {start}-{end})"
+
             parts.append(
-                f"{score_str}File: {chunk['path']}\n{chunk['content'][:800]}"
+                f"{score_str}File: {location}\n{chunk['content'][:800]}"
             )
 
         return "\n\n".join(parts)

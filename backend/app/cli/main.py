@@ -63,7 +63,14 @@ def ask(
 
         print("\n[bold magenta]Sources:[/bold magenta]")
         for s in sources:
-            print(f"- {s}")
+            path = s["path"]
+            start = s.get("start")
+            end = s.get("end")
+
+            if start is not None and end is not None:
+                print(f"- {path} (lines {start}-{end})")
+            else:
+                print(f"- {path}")
         return
 
     # --- interactive ---
@@ -101,7 +108,14 @@ def ask(
 
         print("\n[bold magenta]Sources:[/bold magenta]")
         for s in sources:
-            print(f"- {s}")
+            path = s["path"]
+            start = s.get("start")
+            end = s.get("end")
+
+            if start is not None and end is not None:
+                print(f"- {path} (lines {start}-{end})")
+            else:
+                print(f"- {path}")
 
         print()
 

@@ -25,10 +25,23 @@ class Chunker:
     def chunk_file(self, file_dict):
         chunks = self.chunk_text(file_dict["content"])
 
-        return [
-            {
+        results = []
+
+        start = 0
+        step = self.chunk_size - self.overlap
+
+        for chunk in chunks:
+            end = start + len(chunk)
+
+            results.append({
                 "content": chunk,
-                "path": file_dict["path"],
-            }
-            for chunk in chunks
-        ]
+                "metadata": {
+                    "path": file_dict["path"],
+                    "start": start,
+                    "end": end,
+                }
+            })
+
+            start += step
+
+        return results

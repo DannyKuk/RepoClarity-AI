@@ -46,8 +46,10 @@
 
         </template>
 
-        <div v-if="message.sources?.length" data-test="sources" class="mt-2 pt-2 border-t-2 border-neutral-600">
-          <div v-for="s in message.sources" :key="s"><UBadge variant="outline">{{ s }}</UBadge></div>
+        <div v-for="s in message.sources" :key="s.path + '-' + s.start" data-test="sources">
+          <UBadge variant="outline">
+            {{ formatSource(s) }}
+          </UBadge>
         </div>
 
       </div>
@@ -62,4 +64,11 @@ import type { ChatMessageType } from "~/types/api";
 defineProps<{
   message: ChatMessageType
 }>()
+
+function formatSource(s: { path: string; start?: number; end?: number }) {
+  if (s.start != null && s.end != null) {
+    return `${s.path} (lines ${s.start}-${s.end})`
+  }
+  return s.path
+}
 </script>

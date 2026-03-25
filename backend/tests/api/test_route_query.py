@@ -19,7 +19,10 @@ class FakeVectorStoreCls:
 
 class FakeQueryEngine:
     def answer(self, question, vector_store, model=None):
-        return "answer", ["file1.py", "file2.py"]
+        return "answer", [
+            {"path": "file1.py", "start": 0, "end": 10},
+            {"path": "file2.py", "start": 0, "end": 20},
+        ]
 
 
 class FakeRegistry:
@@ -76,7 +79,8 @@ def test_ask_success(tmp_path):
     data = response.json()
 
     assert data["answer"] == "answer"
-    assert data["sources"] == ["file1.py", "file2.py"]
+    paths = sorted(s["path"] for s in data["sources"])
+    assert paths == ["file1.py", "file2.py"]
     assert data["languages"] == ["python"]
     assert data["entrypoints"] == ["main.py"]
 
