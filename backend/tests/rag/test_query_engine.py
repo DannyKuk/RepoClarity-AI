@@ -33,10 +33,21 @@ class FakeVectorStore:
         self.summary = summary
 
 
+def make_chunk(content, path, start=0, end=10):
+    return {
+        "content": content,
+        "metadata": {
+            "path": path,
+            "start": start,
+            "end": end,
+        },
+    }
+
+
 def test_answer_happy_path():
     chunks = [
-        {"content": "code1", "path": "a.py"},
-        {"content": "code2", "path": "b.py"},
+        make_chunk("code1", "a.py"),
+        make_chunk("code2", "b.py"),
     ]
 
     retriever = FakeRetriever(chunks)
@@ -51,12 +62,12 @@ def test_answer_happy_path():
     assert llm.called
     assert answer == "fake answer"
 
-    # sorted unique paths
-    assert sources == ["a.py", "b.py"]
+    paths = sorted(s["path"] for s in sources)
+    assert paths == ["a.py", "b.py"]
 
 
 def test_overview_question_triggers_overview_prompt():
-    chunks = [{"content": "x", "path": "a.py"}]
+    chunks = [make_chunk("x", "a.py")]
 
     retriever = FakeRetriever(chunks)
     llm = FakeLLM()
@@ -70,7 +81,7 @@ def test_overview_question_triggers_overview_prompt():
 
 
 def test_detailed_question_triggers_detailed_prompt():
-    chunks = [{"content": "x", "path": "a.py"}]
+    chunks = [make_chunk("x", "a.py")]
 
     retriever = FakeRetriever(chunks)
     llm = FakeLLM()
@@ -85,8 +96,7 @@ def test_detailed_question_triggers_detailed_prompt():
 
 def test_context_truncates_content():
     long_text = "x" * 1000
-
-    chunks = [{"content": long_text, "path": "a.py"}]
+    chunks = [make_chunk(long_text, "a.py")]
 
     retriever = FakeRetriever(chunks)
     llm = FakeLLM()
@@ -96,16 +106,15 @@ def test_context_truncates_content():
 
     engine.answer("question", vs)
 
-    # only first 800 chars should be included
     assert "x" * 800 in llm.last_prompt
     assert "x" * 900 not in llm.last_prompt
 
 
 def test_sources_are_deduplicated_and_sorted():
     chunks = [
-        {"content": "x", "path": "b.py"},
-        {"content": "y", "path": "a.py"},
-        {"content": "z", "path": "a.py"},
+        make_chunk("x", "b.py", 0, 10),
+        make_chunk("y", "a.py", 0, 10),
+        make_chunk("z", "a.py", 20, 30),
     ]
 
     retriever = FakeRetriever(chunks)
@@ -116,11 +125,12 @@ def test_sources_are_deduplicated_and_sorted():
 
     _, sources = engine.answer("question", vs)
 
-    assert sources == ["a.py", "b.py"]
+    paths = sorted(set(s["path"] for s in sources))
+    assert paths == ["a.py", "b.py"]
 
 
 def test_missing_framework_and_summary_defaults():
-    chunks = [{"content": "x", "path": "a.py"}]
+    chunks = [make_chunk("x", "a.py")]
 
     retriever = FakeRetriever(chunks)
     llm = FakeLLM()

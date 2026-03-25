@@ -5,6 +5,8 @@ from pathlib import Path
 
 
 class VectorStore:
+    STOPWORDS = {"the", "is", "in", "at", "of", "and", "to", "a"}
+
     def __init__(self, dimension: int):
         self.dimension = dimension
         self.index = faiss.IndexFlatL2(dimension)
@@ -47,11 +49,83 @@ class VectorStore:
 
         for dist, idx in zip(distances[0], indices[0]):
             if 0 <= idx < len(self.documents):
-                doc = dict(self.documents[idx])  # shallow copy
+                doc = dict(self.documents[idx])
                 doc["_score"] = float(dist)
                 results.append(doc)
 
         return results
+
+    def search_keyword(self, query: str, k: int = 5):
+        if not self.documents:
+            return []
+
+        query_terms = [
+            term for term in query.lower().split()
+            if term not in self.STOPWORDS and len(term) > 2
+        ]
+
+        scored = []
+
+        for doc in self.documents:
+            content = doc.get("content", "").lower()
+            path = doc.get("metadata", {}).get("path", "").lower()
+
+            filename = path.replace("\\", "/").split("/")[-1]
+
+            score = 0
+
+            # 🔥 STRONG filename match (key change)
+            for term in query_terms:
+                if term in filename:
+                    score += 10
+
+            # medium: path match
+            for term in query_terms:
+                if term in path:
+                    score += 5
+
+            # weak: content match
+            score += sum(1 for term in query_terms if term in content)
+
+            if score > 0:
+                doc_copy = dict(doc)
+                doc_copy["_keyword_score"] = score
+                scored.append((score, doc_copy))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        return [doc for _, doc in scored[:k]]
+
+    def _get_doc_id(self, doc):
+        return doc.get("id") or (
+            doc.get("metadata", {}).get("path", "")
+            + str(doc.get("metadata", {}).get("start", ""))
+        )
+
+    def search_hybrid(self, query: str, query_embedding, k: int = 5):
+        semantic_results = self.search(query_embedding, k=k)
+        keyword_results = self.search_keyword(query, k=k)
+
+        combined = []
+        seen = set()
+
+        # interleave results (better balance)
+        for i in range(max(len(semantic_results), len(keyword_results))):
+            if i < len(semantic_results):
+                doc = semantic_results[i]
+                doc_id = self._get_doc_id(doc)
+                if doc_id not in seen:
+                    combined.append(doc)
+                    seen.add(doc_id)
+
+            if i < len(keyword_results):
+                doc = keyword_results[i]
+                doc_id = self._get_doc_id(doc)
+                if doc_id not in seen:
+                    combined.append(doc)
+                    seen.add(doc_id)
+
+        return combined[:k]
 
     def save(self, path):
         path = Path(path)

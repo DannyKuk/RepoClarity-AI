@@ -18,7 +18,7 @@ class ScannerConfig:
         "Build", "Builds",
         "test-v1_BackUpThisFolder_ButDontShipItWithYourGame",
         "Examples", "Examples & Extras", "TutorialInfo",
-        "Samples", "SampleScenes",
+        "Samples", "SampleScenes", ".pytest_cache",
     })
 
     low_value_dirs: set[str] = field(default_factory=lambda: {

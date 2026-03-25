@@ -1,9 +1,15 @@
 export interface AskResponse {
     answer: string
-    sources: string[]
+    sources: Source[]
     languages: string[]
     framework: string | null
     entrypoints: string[]
+}
+
+export interface Source {
+    path: string
+    start?: number
+    end?: number
 }
 
 export type ChatMessageType = {
@@ -11,7 +17,7 @@ export type ChatMessageType = {
     role: 'user' | 'assistant'
     text: string
     blocks?: any[]
-    sources?: string[]
+    sources?: Source[]
     languages?: string[]
     framework?: string | null
     entrypoints?: string[]

@@ -57,8 +57,8 @@ def test_chunk_file_basic():
 
     result = c.chunk_file(file_dict)
 
-    assert all("content" in r and "path" in r for r in result)
-    assert all(r["path"] == "test.txt" for r in result)
+    assert all("content" in r and "metadata" in r for r in result)
+    assert all(r["metadata"]["path"] == "test.txt" for r in result)
 
 
 def test_chunk_file_missing_keys():

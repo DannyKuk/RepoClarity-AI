@@ -16,12 +16,28 @@ class FakeEmbedder:
 class FakeVectorStore:
     def __init__(self):
         self.called = False
+        self.last_embedding = None
+        self.last_k = None
 
-    def search(self, embedding, k=5):
+    def search_hybrid(self, query, query_embedding, k=5):
         self.called = True
-        self.last_embedding = embedding
+        self.last_embedding = query_embedding
         self.last_k = k
-        return ["result"]
+        return self._results()
+
+    def search(self, query_embedding, k=5):
+        self.called = True
+        self.last_embedding = query_embedding
+        self.last_k = k
+        return self._results()
+
+    def _results(self):
+        return [
+            {
+                "content": "test",
+                "metadata": {"path": "test.py", "start": 0, "end": 10},
+            }
+        ]
 
 
 def test_retrieve_happy_path():
@@ -33,13 +49,24 @@ def test_retrieve_happy_path():
     result = r.retrieve("hello", vector_store, k=3)
 
     assert embedder.called
-    assert embedder.last_texts == ["hello"]
+
+    rewritten = embedder.last_texts[0]
+
+    assert "hello" in rewritten
+    assert "implemented" in rewritten
 
     assert vector_store.called
     assert vector_store.last_embedding == [0.1, 0.2]
-    assert vector_store.last_k == 3
+    assert vector_store.last_k == 6
 
-    assert result == ["result"]
+    assert isinstance(result, list)
+    assert len(result) > 0
+
+    doc = result[0]
+
+    assert "content" in doc
+    assert "metadata" in doc
+    assert doc["metadata"]["path"] == "test.py"
 
 
 def test_retrieve_empty_embedding_raises():

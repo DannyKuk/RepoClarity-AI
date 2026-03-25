@@ -14,6 +14,8 @@ Everything runs **locally**.
 
 * Repository indexing with semantic embeddings
 * FAISS vector search
+* Hybrid retrieval (semantic + keyword)
+* File-aware reranking for improved accuracy
 * Local LLM support via Ollama
 * Language detection (Python, Typescript, etc.)
 * Framework detection (Unity, Nuxt, FastAPI, etc.)
@@ -321,16 +323,67 @@ scan repository
 ↓
 filter irrelevant files
 ↓
-chunk code
+chunk code (with metadata: path + positions)
 ↓
 generate embeddings
 ↓
 store vectors in FAISS
 ↓
-retrieve relevant chunks
+rewrite query
+↓
+hybrid retrieval (semantic + keyword)
+↓
+rerank results (file-aware ranking)
+↓
+select top-k chunks
 ↓
 generate answer with LLM
 ```
+
+---
+
+## Retrieval Improvements
+
+The retrieval system uses a hybrid approach to improve accuracy and reduce noise:
+
+### Hybrid Search
+Combines:
+- semantic vector search (FAISS)
+- keyword-based matching (file paths + content)
+
+This ensures both:
+- conceptual understanding
+- exact file matching
+
+---
+### Query Rewriting
+Short or vague queries are automatically expanded before retrieval.
+
+Example:
+auth → Where is auth implemented in this codebase?
+
+---
+
+### Reranking
+Retrieved chunks are re-ranked using file-aware heuristics:
+
+- filename matches (strong signal)
+- file path matches (medium signal)
+- content matches (weak signal)
+
+This prioritizes the most relevant files over loosely related ones.
+
+---
+
+### Metadata-Aware Chunks
+Each chunk includes:
+
+- file path
+- start/end position
+
+This enables:
+- better ranking
+- traceability of results
 
 ---
 
@@ -344,3 +397,5 @@ The backend is designed to be:
 
 The frontend will interact with the API layer only.
 
+Retrieval quality is continuously evaluated using an internal benchmarking script
+based on precision@k and relevance scoring.

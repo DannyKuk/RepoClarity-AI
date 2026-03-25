@@ -10,10 +10,14 @@ class AskRequest(BaseModel):
     question: str
     model: str | None = None
 
+class Source(BaseModel):
+    path: str
+    start: int | None = None
+    end: int | None = None
 
 class AskResponse(BaseModel):
     answer: str
-    sources: list[str]
+    sources: list[Source]
     languages: list[str] = []
     framework: str | None = None
     entrypoints: list[str] = []
