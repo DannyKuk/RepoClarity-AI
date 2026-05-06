@@ -13,7 +13,7 @@ from app.repo.file_prioritizer import get_file_weight
 from app.repo.entrypoint_detector import EntrypointDetector
 from app.repo.repo_registry import RepoRegistry
 
-from app.llm.ollama_client import OllamaClient
+from app.llm.lm_studio_client import LMStudioClient
 
 
 class Services:
@@ -27,7 +27,7 @@ class Services:
         self.langauges_detector = LanguageDetector()
 
         # --- llm ---
-        self.llm = OllamaClient()
+        self.llm = LMStudioClient()
 
         # --- rag ---
         self.retriever = Retriever(self.embedder)

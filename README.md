@@ -42,7 +42,7 @@ RepoClarity uses a **RAG (Retrieval-Augmented Generation)** pipeline:
 repository → chunking → embeddings → vector search → LLM answers
 
 - Embeddings + vector search via FAISS  
-- Local LLMs via Ollama  
+- Local LLMs via LM Studio  
 - No external APIs required  
 
 ---
@@ -52,7 +52,7 @@ repository → chunking → embeddings → vector search → LLM answers
 ### Backend
 - FastAPI
 - FAISS
-- Ollama (local LLMs)
+- LM Studio (local LLMs)
 - Python 3.11+
 
 ### Frontend
@@ -66,15 +66,14 @@ repository → chunking → embeddings → vector search → LLM answers
 
 - Python 3.11+
 - Node.js (for frontend)
-- Ollama installed
+- LM Studio installed and running on port 1234
 
-👉 https://ollama.com
+👉 https://lmstudio.ai
 
 Recommended models:
 ```
-qwen2.5-coder
-llama3.1
-deepseek-coder
+Meta-Llama-3.1-8B-Instruct-GGUF
+Qwen2.5-Coder-7B-Instruct-GGUF
 ```
 
 ---

@@ -2,7 +2,6 @@ fastapi
 uvicorn
 faiss-cpu
 sentence-transformers
-ollama
 typer
 rich
 requests

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="flex justify-between mb-3">
-      <h2 class="font-semibold">Repositories</h2>
+    <div class="flex justify-between items-center mb-6 px-1">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-neutral-400">Repositories</h2>
 
       <AddRepoModal
           v-model:open="modalOpen"

@@ -16,7 +16,7 @@ Everything runs **locally**.
 * FAISS vector search
 * Hybrid retrieval (semantic + keyword)
 * File-aware reranking for improved accuracy
-* Local LLM support via Ollama
+* Local LLM support via LM Studio
 * Language detection (Python, Typescript, etc.)
 * Framework detection (Unity, Nuxt, FastAPI, etc.)
 * Entrypoint detection
@@ -29,20 +29,19 @@ Everything runs **locally**.
 ## Requirements
 
 * Python **3.11+**
-* **Ollama** installed
+* **LM Studio** installed and running on port 1234
 * A supported embedding model (downloaded automatically)
 
 Recommended models:
 
 ```
-qwen2.5-coder
-llama3.1
-deepseek-coder
+Meta-Llama-3.1-8B-Instruct-GGUF
+Qwen2.5-Coder-7B-Instruct-GGUF
 ```
 
-Install Ollama:
+Install LM Studio:
 
-https://ollama.com
+https://lmstudio.ai
 
 ---
 
@@ -182,12 +181,12 @@ exit
 You can override the default LLM:
 
 ```bash
-repoclarity ask <repo> "Explain the project" --model qwen2.5-coder
+repoclarity ask <repo> "Explain the project" --model Meta-Llama-3.1-8B-Instruct-GGUF
 ```
 
 ---
 
-### List installed Ollama models
+### List installed LM Studio models
 
 ```bash
 repoclarity models
@@ -286,7 +285,7 @@ Body:
 {
   "repo": "website",
   "question": "What does this project do?",
-  "model": "qwen2.5-coder"
+  "model": "Meta-Llama-3.1-8B-Instruct-GGUF"
 }
 ```
 
@@ -306,7 +305,7 @@ GET /models
 app/
  ├ api/            # FastAPI routes
  ├ cli/            # CLI commands
- ├ llm/            # Ollama integration
+ ├ llm/            # LM Studio integration
  ├ rag/            # Retrieval Augmented Generation pipeline
  ├ repo/           # Repository utilities
  └ main.py         # FastAPI entrypoint
